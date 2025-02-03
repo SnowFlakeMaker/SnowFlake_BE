@@ -16,7 +16,9 @@ public class StatusInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // TODO user 테이블 구현 완료되면 단방향 1:1 맵핑하기
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Builder.Default()
     @ColumnDefault("25")
