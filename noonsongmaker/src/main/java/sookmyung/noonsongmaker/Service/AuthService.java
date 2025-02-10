@@ -1,13 +1,12 @@
-package Service;
+package sookmyung.noonsongmaker.Service;
 
-import Dto.auth.SignupRequestDto;
-import Entity.User;
-import Repository.UserRepository;
+import sookmyung.noonsongmaker.Dto.auth.SignupRequestDto;
+import sookmyung.noonsongmaker.Entity.User;
+import sookmyung.noonsongmaker.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @Service
 @RequiredArgsConstructor

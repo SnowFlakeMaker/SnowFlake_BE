@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 
 import jakarta.persistence.*;

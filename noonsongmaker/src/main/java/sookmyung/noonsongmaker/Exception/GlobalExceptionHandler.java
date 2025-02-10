@@ -1,6 +1,6 @@
-package Exception;
+package sookmyung.noonsongmaker.Exception;
 
-import Dto.Response;
+import sookmyung.noonsongmaker.Dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;

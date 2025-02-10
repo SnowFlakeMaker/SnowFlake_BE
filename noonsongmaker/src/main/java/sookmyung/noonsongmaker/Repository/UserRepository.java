@@ -1,6 +1,6 @@
-package Repository;
+package sookmyung.noonsongmaker.Repository;
 
-import Entity.User;
+import sookmyung.noonsongmaker.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Integer> {

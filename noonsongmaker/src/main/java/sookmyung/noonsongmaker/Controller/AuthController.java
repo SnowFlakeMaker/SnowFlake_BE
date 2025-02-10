@@ -1,10 +1,9 @@
-package Controller;
+package sookmyung.noonsongmaker.Controller;
 
-import Dto.Response;
-import Dto.auth.SignupRequestDto;
-import Service.AuthService;
+import sookmyung.noonsongmaker.Dto.Response;
+import sookmyung.noonsongmaker.Dto.auth.SignupRequestDto;
+import sookmyung.noonsongmaker.Service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 public enum Chapter {
     SEM_S_1, VAC_S_1, SEM_W_1, VAC_W_1,

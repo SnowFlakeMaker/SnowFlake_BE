@@ -1,4 +1,4 @@
-package Dto.auth;
+package sookmyung.noonsongmaker.Dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
