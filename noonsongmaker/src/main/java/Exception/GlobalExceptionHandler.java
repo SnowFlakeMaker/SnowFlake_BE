@@ -1,6 +1,6 @@
 package Exception;
 
-import Dto.ResponseDto;
+import Dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -16,8 +16,8 @@ public class GlobalExceptionHandler {
 
     // 401 Unauthorized
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ResponseDto<Object>> handleAuthenticationException(AuthenticationException ex) {
-        ResponseDto<Object> response = new ResponseDto<>(
+    public ResponseEntity<Response<Object>> handleAuthenticationException(AuthenticationException ex) {
+        Response<Object> response = new Response<>(
                 "인증에 실패했습니다.",
                 null
         );
@@ -26,8 +26,8 @@ public class GlobalExceptionHandler {
 
     // 400 Bad Request
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseDto<Object>> handleBadRequestException(IllegalArgumentException ex) {
-        ResponseDto<Object> response = new ResponseDto<>(
+    public ResponseEntity<Response<Object>> handleBadRequestException(IllegalArgumentException ex) {
+        Response<Object> response = new Response<>(
                 "잘못된 요청입니다.",
                 ex.getMessage()
         );
@@ -36,9 +36,9 @@ public class GlobalExceptionHandler {
 
     // 400 Bad Request
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseDto<Object>> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Response<Object>> handleValidationException(MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        ResponseDto<Object> response = new ResponseDto<>(
+        Response<Object> response = new Response<>(
                 "입력 값이 올바르지 않습니다.",
                 errorMessage
         );
@@ -47,8 +47,8 @@ public class GlobalExceptionHandler {
 
     // 403 Forbidden
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ResponseDto<Object>> handleAccessDeniedException(AccessDeniedException ex) {
-        ResponseDto<Object> response = new ResponseDto<>(
+    public ResponseEntity<Response<Object>> handleAccessDeniedException(AccessDeniedException ex) {
+        Response<Object> response = new Response<>(
                 "접근 권한이 없습니다.",
                 null
         );
@@ -57,8 +57,8 @@ public class GlobalExceptionHandler {
 
     // 404 Not Found
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ResponseDto<Object>> handleNoSuchElementException(NoSuchElementException ex) {
-        ResponseDto<Object> response = new ResponseDto<>(
+    public ResponseEntity<Response<Object>> handleNoSuchElementException(NoSuchElementException ex) {
+        Response<Object> response = new Response<>(
                 "해당 리소스를 찾을 수 없습니다.",
                 null
         );
@@ -67,8 +67,8 @@ public class GlobalExceptionHandler {
 
     // 500 Internal Server Error
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseDto<Object>> handleGlobalException(Exception ex) {
-        ResponseDto<Object> response = new ResponseDto<>(
+    public ResponseEntity<Response<Object>> handleGlobalException(Exception ex) {
+        Response<Object> response = new Response<>(
                 "서버 내부 오류가 발생했습니다.",
                 ex.getMessage()
         );
