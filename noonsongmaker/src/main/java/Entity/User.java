@@ -1,15 +1,14 @@
 package Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @Column(name = "user_id")
@@ -22,6 +21,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     private Chapter currentChapter;
 }
