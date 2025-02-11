@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,4 +53,8 @@ public class StatusInfo {
     @Builder.Default
     @ColumnDefault("20")
     private Integer globalAssess = 0;
+
+    @Builder.Default
+    @ColumnDefault("100")
+    private Integer coin = 100;
 }

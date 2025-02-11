@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 
 import jakarta.persistence.*;
@@ -39,10 +39,3 @@ public class UserProfile{
     private String dream;
 }
 
-enum MBTI {
-    ISTJ, ISFJ, INFJ, INTJ,
-    ISTP, ISFP, INFP, INTP,
-    ESTP, ESFP, ENFP, ENTP,
-    ESTJ, ESFJ, ENFJ, ENTJ,
-    UNKNOWN
-}

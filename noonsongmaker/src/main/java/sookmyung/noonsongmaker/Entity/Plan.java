@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,4 +32,3 @@ public class Plan {
 enum Period {
     ACADEMIC, VACATION, BOTH, SPECIAL
 }
-

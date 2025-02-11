@@ -1,4 +1,4 @@
-package Entity;
+package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,7 +19,8 @@ public class Schedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long scheduleId;
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "schedule_id")
     private List<Plan> plans;
 
     @ManyToOne

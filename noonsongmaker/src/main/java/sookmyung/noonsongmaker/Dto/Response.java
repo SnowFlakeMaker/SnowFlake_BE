@@ -1,4 +1,4 @@
-package Dto;
+package sookmyung.noonsongmaker.Dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
