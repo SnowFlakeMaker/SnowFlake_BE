@@ -1,4 +1,4 @@
-package sookmyung.noonsongmaker.Service;
+package sookmyung.noonsongmaker.Service.auth;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
