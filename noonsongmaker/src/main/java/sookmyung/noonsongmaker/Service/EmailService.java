@@ -54,4 +54,16 @@ public class EmailService {
         return uuid.substring(0, 6).toUpperCase();
     }
 
+    public boolean verifyCode(VerificationRequestDto verificationRequestDto) {
+        String emailId = verificationRequestDto.getEmailId();
+        String code = verificationRequestDto.getCode();
+
+        String storedCode = redisTemplate.opsForValue().get(EMAIL_PREFIX + emailId);
+
+        if (storedCode != null && storedCode.equals(code)) {
+            redisTemplate.opsForValue().set("EMAIL_VERIFIED_" + emailId, "true");
+        }
+
+        return storedCode != null && storedCode.equals(code);
+    }
 }
