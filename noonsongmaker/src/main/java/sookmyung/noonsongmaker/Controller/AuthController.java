@@ -33,5 +33,9 @@ public class AuthController {
         return ResponseEntity.ok(Response.buildResponse(null, "인증 코드가 전송되었습니다."));
     }
 
-
+    @PostMapping("/verify-code")
+    public ResponseEntity<Response<Boolean>> verifyCode(@RequestBody VerificationRequestDto verificationRequestDto) {
+        boolean isVerified = emailService.verifyCode(verificationRequestDto);
+        return ResponseEntity.ok(Response.buildResponse(isVerified, isVerified ? "인증 성공" : "인증 실패"));
+    }
 }
