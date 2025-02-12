@@ -48,4 +48,10 @@ public class EmailService {
             throw new RuntimeException(e);
         }
     }
+
+    public String generateCode() {
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+        return uuid.substring(0, 6).toUpperCase();
+    }
+
 }
