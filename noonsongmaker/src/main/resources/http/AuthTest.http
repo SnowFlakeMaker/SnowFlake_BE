@@ -21,3 +21,12 @@ Content-Type: application/json
   "emailId": "숙명메일아이디"
 }
 
+### Email Varification
+# @no-cookie-jar
+POST http://localhost:8080/auth/verify-code
+Content-Type: application/json
+
+{
+  "emailId": "숙명메일아이디",
+  "code": "인증코드"
+}
