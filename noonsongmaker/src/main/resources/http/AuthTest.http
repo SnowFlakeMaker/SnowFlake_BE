@@ -12,3 +12,12 @@ Content-Type: application/json
   "password": "1234"
 }
 
+### Email Varification
+# @no-cookie-jar
+POST http://localhost:8080/auth/send-email
+Content-Type: application/json
+
+{
+  "emailId": "숙명메일아이디"
+}
+
