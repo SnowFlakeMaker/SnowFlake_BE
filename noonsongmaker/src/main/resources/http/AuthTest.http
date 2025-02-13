@@ -3,7 +3,7 @@ GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
 
-### Email Varification
+### Send Email Code
 # @no-cookie-jar
 POST http://localhost:8080/auth/send-email
 Content-Type: application/json
@@ -45,5 +45,11 @@ Content-Type: application/json
 ### Refresh
 # @no-cookie-jar
 POST http://localhost:8080/auth/refresh
+Content-Type: application/json
+Cookie: REFRESH_TOKEN=리프레쉬토큰
+
+### Logout
+# @no-cookie-jar
+POST http://localhost:8080/auth/logout
 Content-Type: application/json
 Cookie: REFRESH_TOKEN=리프레쉬토큰
