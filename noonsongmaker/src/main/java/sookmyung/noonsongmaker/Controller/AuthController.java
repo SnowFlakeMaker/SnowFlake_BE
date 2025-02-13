@@ -58,4 +58,13 @@ public class AuthController {
         responseData.put("email", email);
         return ResponseEntity.ok(Response.buildResponse(responseData, "Access Token 갱신 성공"));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Response<String>> logout(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken, HttpServletResponse response) {
+        if (refreshToken != null) {
+            authService.logout(refreshToken, response);
+        }
+
+        return ResponseEntity.ok(Response.buildResponse(null, "로그아웃 성공"));
+    }
 }
