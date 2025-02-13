@@ -25,7 +25,7 @@ public class AuthService {
     private final StringRedisTemplate redisTemplate;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
-
+    private final RefreshTokenService refreshTokenService;
 
     private static final String EMAIL_PREFIX = "EMAIL_VERIFIED_";
 
@@ -53,17 +53,21 @@ public class AuthService {
     }
 
     public String login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        String email = loginRequestDto.getEmail();
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword())
+                new UsernamePasswordAuthenticationToken(email, loginRequestDto.getPassword())
         );
 
-        String accessToken = jwtProvider.generateAccessToken(loginRequestDto.getEmail());
-        String refreshToken = jwtProvider.generateRefreshToken(loginRequestDto.getEmail());
+        String accessToken = jwtProvider.generateAccessToken(email);
+        String refreshToken = jwtProvider.generateRefreshToken(email);
+
+        long expiration = jwtProvider.getExpiration(refreshToken);
+        refreshTokenService.saveRefreshToken(email, refreshToken, expiration);
 
         setCookie(response, "ACCESS_TOKEN", accessToken);
         setCookie(response, "REFRESH_TOKEN", refreshToken);
 
-        return loginRequestDto.getEmail();
+        return email;
     }
 
     private void setCookie(HttpServletResponse response, String name, String value) {
