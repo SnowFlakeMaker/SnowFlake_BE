@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import sookmyung.noonsongmaker.jwt.JwtProvider;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,12 +12,11 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final StringRedisTemplate stringRedisTemplate;
-
-    private static final long REFRESH_TOKEN_EXPIRE = 60 * 60 * 24 * 7;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final JwtProvider jwtProvider;
 
-    public void saveRefreshToken(String email, String refreshToken) {
-        redisTemplate.opsForValue().set(email, refreshToken, REFRESH_TOKEN_EXPIRE, TimeUnit.SECONDS);
+    public void saveRefreshToken(String email, String refreshToken, long expiration) {
+        redisTemplate.opsForValue().set(email, refreshToken, expiration, TimeUnit.MILLISECONDS);
     }
 
     public boolean validateRefreshToken(String email, String refreshToken) {
