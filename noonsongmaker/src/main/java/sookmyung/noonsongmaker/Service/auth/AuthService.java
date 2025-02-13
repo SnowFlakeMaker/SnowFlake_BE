@@ -70,6 +70,18 @@ public class AuthService {
         return email;
     }
 
+    public String refreshAccessToken(String refreshToken, HttpServletResponse response) {
+        if (!jwtProvider.validateToken(refreshToken)) throw new IllegalArgumentException("유효하지 않은 Refresh Token");
+
+        String email = jwtProvider.getEmailFromToken(refreshToken);
+        if (!refreshTokenService.validateRefreshToken(email, refreshToken))
+            throw new IllegalArgumentException("만료되었거나 사용 불가능한 Refresh Token");
+
+        String newAccessToken = jwtProvider.generateAccessToken(email);
+        setCookie(response, "ACCESS_TOKEN", newAccessToken);
+        return email;
+    }
+
     private void setCookie(HttpServletResponse response, String name, String value) {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
