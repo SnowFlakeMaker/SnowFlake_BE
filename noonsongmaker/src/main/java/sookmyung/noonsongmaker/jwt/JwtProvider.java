@@ -41,6 +41,15 @@ public class JwtProvider {
         }
     }
 
+    public long getExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration().getTime() - System.currentTimeMillis();
+    }
+
     public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
