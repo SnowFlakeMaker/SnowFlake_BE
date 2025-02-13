@@ -24,7 +24,9 @@ public class RefreshTokenService {
         return storedRefreshToken != null && storedRefreshToken.equals(refreshToken);
     }
 
-    public void invalidateRefreshToken(String email) {
+    public void invalidateRefreshToken(String email, String refreshToken) {
         stringRedisTemplate.delete(email);
+        long expiration = jwtProvider.getExpiration(refreshToken);
+        redisTemplate.opsForValue().set("BLACKLIST_" + refreshToken, "LOGOUT", expiration, TimeUnit.MILLISECONDS);
     }
 }
