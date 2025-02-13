@@ -58,7 +58,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsServiceImpl);
         provider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(List.of(provider)); // TODO 왜 list인가?
+        return new ProviderManager(List.of(provider));
     }
 
     @Bean
