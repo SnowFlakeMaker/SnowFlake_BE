@@ -29,7 +29,7 @@ public class JwtAuthorizeFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String jwt = jwtProvider.resolveToken(request);
 
-        if (jwt != null && jwtProvider.validateAccessToken(jwt)) {
+        if (jwt != null && jwtProvider.validateToken(jwt)) {
             String email = jwtProvider.getEmailFromToken(jwt);
 
             User user = userRepository.findByEmail(email)

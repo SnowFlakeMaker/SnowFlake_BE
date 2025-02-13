@@ -11,14 +11,14 @@ import java.util.Date;
 @Component
 public class JwtProvider {
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long accessTokenValidity = 1000 * 60 * 60; // 추후 시간 단축!
-    private final long refreshTokenValidity = 1000 * 60 * 60 * 24 * 7; // 7일
+    private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 60; // 추후 시간 단축!
+    private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 7일
 
     public String generateAccessToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
                 .signWith(secretKey)
                 .compact();
     }
@@ -27,12 +27,12 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY))
                 .signWith(secretKey)
                 .compact();
     }
 
-    public boolean validateAccessToken(String token) {
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
