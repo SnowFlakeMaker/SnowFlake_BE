@@ -12,11 +12,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final StringRedisTemplate stringRedisTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final JwtProvider jwtProvider;
 
     public void saveRefreshToken(String email, String refreshToken, long expiration) {
-        redisTemplate.opsForValue().set(email, refreshToken, expiration, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set(email, refreshToken, expiration, TimeUnit.MILLISECONDS);
     }
 
     public boolean validateRefreshToken(String email, String refreshToken) {
@@ -27,6 +26,6 @@ public class RefreshTokenService {
     public void invalidateRefreshToken(String email, String refreshToken) {
         stringRedisTemplate.delete(email);
         long expiration = jwtProvider.getExpiration(refreshToken);
-        redisTemplate.opsForValue().set("BLACKLIST_" + refreshToken, "LOGOUT", expiration, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set("BLACKLIST_" + refreshToken, "LOGOUT", expiration, TimeUnit.MILLISECONDS);
     }
 }
