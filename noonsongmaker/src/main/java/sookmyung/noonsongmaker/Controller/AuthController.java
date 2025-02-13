@@ -1,6 +1,7 @@
 package sookmyung.noonsongmaker.Controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.*;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.auth.LoginRequestDto;
 import sookmyung.noonsongmaker.Dto.auth.MailSendDto;
@@ -9,11 +10,10 @@ import sookmyung.noonsongmaker.Dto.auth.VerificationRequestDto;
 import sookmyung.noonsongmaker.Service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import sookmyung.noonsongmaker.Service.auth.EmailService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -42,8 +42,20 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Response<String>> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public ResponseEntity<Response<Map<String, String>>> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String email = authService.login(loginRequestDto, response);
-        return ResponseEntity.ok(Response.buildResponse(email, "로그인 성공"));
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("email", email);
+        return ResponseEntity.ok(Response.buildResponse(responseData, "로그인 성공"));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Response<Map<String, String>>> refreshToken(@CookieValue("REFRESH_TOKEN") String refreshToken, HttpServletResponse response) {
+        String email = authService.refreshAccessToken(refreshToken, response);
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("email", email);
+        return ResponseEntity.ok(Response.buildResponse(responseData, "Access Token 갱신 성공"));
     }
 }
