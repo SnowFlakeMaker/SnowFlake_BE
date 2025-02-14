@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Repository.UserRepository;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 public class UserProfileService {
@@ -53,4 +55,20 @@ public class UserProfileService {
 
         return Pair.of(userProfile, statusInfo);
     }
+
+    @Transactional(readOnly = true)
+    public Pair<UserProfile, StatusInfo> getUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+
+        UserProfile userProfile = userProfileRepository.findByUser(user)
+                .orElseThrow(() -> new NoSuchElementException("유저 프로필이 존재하지 않습니다."));
+
+        StatusInfo statusInfo = statusInfoRepository.findByUser(user)
+                .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+
+        return Pair.of(userProfile, statusInfo);
+    }
+
+
 }
