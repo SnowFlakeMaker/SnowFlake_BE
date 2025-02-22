@@ -1,5 +1,6 @@
 package sookmyung.noonsongmaker.Dto.course;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequiredResponseDto {
+    @JsonProperty("디사의")
     private Boolean isRequiredDigital;
+    @JsonProperty("미래설계")
     private Boolean isRequiredFuture;
+    @JsonProperty("영교필")
     private Boolean isRequiredEng;
-    private Boolean isRequiredLogic;}
+    @JsonProperty("논사소")
+    private Boolean isRequiredLogic;
+}
