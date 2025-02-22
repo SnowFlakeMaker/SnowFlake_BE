@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequiredResponseDto {
     @JsonProperty("디사의")
-    private Boolean isRequiredDigital;
+    private Boolean requiredDigital;
     @JsonProperty("미래설계")
-    private Boolean isRequiredFuture;
+    private Boolean requiredFuture;
     @JsonProperty("영교필")
-    private Boolean isRequiredEng;
+    private Boolean requiredEng;
     @JsonProperty("논사소")
-    private Boolean isRequiredLogic;
+    private Boolean requiredLogic;
 }

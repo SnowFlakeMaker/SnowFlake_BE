@@ -2,6 +2,7 @@ package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sookmyung.noonsongmaker.Dto.course.TimetableSubmitRequestDto;
 
 @Entity
 @Getter
@@ -20,16 +21,18 @@ public class Course {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Integer CoreCredits;
-    private Integer ElectiveCredits;
+    private Integer coreCredits;
+    private Integer electiveCredits;
 
-    private Boolean isRequiredDigital;
-    private Boolean isRequiredFuture;
-    private Boolean isRequiredEng;
-    private Boolean isRequiredLogic;
+    private Boolean requiredDigital;
+    private Boolean requiredFuture;
+    private Boolean requiredEng;
+    private Boolean requiredLogic;
 
-    private Short isCore1;
-    private Short isCore2;
-    private Short isCore3;
-    private Short isCore4;
+    private Short core1;
+    private Short core2;
+    private Short core3;
+    private Short core4;
+
+
 }
