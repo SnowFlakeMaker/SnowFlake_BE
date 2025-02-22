@@ -2,6 +2,7 @@ package sookmyung.noonsongmaker.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sookmyung.noonsongmaker.Dto.course.CoreResponseDto;
 import sookmyung.noonsongmaker.Dto.course.CreditResponseDto;
 import sookmyung.noonsongmaker.Dto.course.RequiredResponseDto;
 import sookmyung.noonsongmaker.Entity.Course;
@@ -43,6 +44,18 @@ public class CourseService {
                 .isRequiredFuture(courseResult.getIsRequiredFuture())
                 .isRequiredEng(courseResult.getIsRequiredEng())
                 .isRequiredLogic(courseResult.getIsRequiredLogic())
+                .build();
+    }
+
+    public CoreResponseDto getCoreList(User user) {
+        Course courseResult = courseRepository.findByUser(user)
+                .orElseThrow(() -> new NoSuchElementException("수강 정보 소유자 없음"));
+
+        return CoreResponseDto.builder()
+                .core1(courseResult.getIsCore1())
+                .core2(courseResult.getIsCore2())
+                .core3(courseResult.getIsCore3())
+                .core4(courseResult.getIsCore4())
                 .build();
     }
 }

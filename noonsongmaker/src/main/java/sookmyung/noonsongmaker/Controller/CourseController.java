@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sookmyung.noonsongmaker.Dto.Response;
+import sookmyung.noonsongmaker.Dto.course.CoreResponseDto;
 import sookmyung.noonsongmaker.Dto.course.CreditResponseDto;
 import sookmyung.noonsongmaker.Dto.course.RequiredResponseDto;
 import sookmyung.noonsongmaker.Entity.User;
@@ -42,4 +43,12 @@ public class CourseController {
         return ResponseEntity.ok(Response.buildResponse(response, "수강해야 하는 교필 리스트"));
     }
 
+    @GetMapping("/core")
+    public ResponseEntity<Response<Map<String, CoreResponseDto>>> getCoreList(@CurrentUser User user) {
+        CoreResponseDto responseDto = courseService.getCoreList(user);
+
+        Map<String, CoreResponseDto> response = new HashMap<>();
+        response.put("core_list", responseDto);
+        return ResponseEntity.ok(Response.buildResponse(response, "교핵 영역별 수강 횟수"));
+    }
 }
