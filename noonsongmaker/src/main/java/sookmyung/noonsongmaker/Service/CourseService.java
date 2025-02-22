@@ -1,5 +1,6 @@
 package sookmyung.noonsongmaker.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Dto.course.*;
@@ -55,5 +56,13 @@ public class CourseService {
                 .core3(courseResult.getCore3())
                 .core4(courseResult.getCore4())
                 .build();
+    }
+
+    @Transactional
+    public void updateTimetable(User user, TimetableSubmitRequestDto requestDto) {
+        Course course = courseRepository.findByUser(user)
+                .orElseThrow(() -> new NoSuchElementException("수강 정보 소유자 없음"));
+
+        course.updateCourse(requestDto);
     }
 }
