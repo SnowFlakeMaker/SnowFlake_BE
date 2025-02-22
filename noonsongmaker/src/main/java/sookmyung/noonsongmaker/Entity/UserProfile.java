@@ -37,6 +37,12 @@ public class UserProfile{
 
     @Column(nullable = false, length = 10)
     private String dream;
+
+    private String major;
+
+    @Enumerated(EnumType.STRING)
+    private MajorType majorType;
+
 }
 
 enum MBTI {
