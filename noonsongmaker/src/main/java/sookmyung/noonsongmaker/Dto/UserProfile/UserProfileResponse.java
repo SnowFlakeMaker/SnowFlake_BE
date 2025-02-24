@@ -7,6 +7,7 @@ import sookmyung.noonsongmaker.Entity.UserProfile;
 public class UserProfileResponse {
     private Long userId;
     private String nickname;
+    private String major;
     private String birthday;
     private String mbti;
     private String hobby;
@@ -15,6 +16,7 @@ public class UserProfileResponse {
     public UserProfileResponse(UserProfile userProfile, StatusInfoResponse statusInfoResponse) {
         this.userId = userProfile.getUser().getId();
         this.nickname = userProfile.getNickname();
+        this.major = userProfile.getMajor();
         this.birthday = userProfile.getBirthday();
         this.mbti = userProfile.getMbti().name(); // Enum → String 변환
         this.hobby = userProfile.getHobby();

@@ -7,6 +7,7 @@ import sookmyung.noonsongmaker.Entity.MBTI;
 public class UserProfileRequest {
     private String nickname;
     private String birthday;
+    private String major;
     private MBTI mbti;
     private String hobby;
     private String dream;

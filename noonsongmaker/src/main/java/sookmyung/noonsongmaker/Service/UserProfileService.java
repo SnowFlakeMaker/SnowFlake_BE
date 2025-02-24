@@ -43,6 +43,7 @@ public class UserProfileService {
         UserProfile userProfile = new UserProfile();
         userProfile.setUser(user);
         userProfile.setNickname(request.getNickname());
+        userProfile.setMajor(request.getMajor());
         userProfile.setBirthday(request.getBirthday());
         userProfile.setMbti(request.getMbti());
         userProfile.setHobby(request.getHobby());
