@@ -88,4 +88,21 @@ public class AuthService {
         cookie.setHttpOnly(true);
         response.addCookie(cookie);
     }
+
+    public void logout(String refreshToken, HttpServletResponse response) {
+        String email = jwtProvider.getEmailFromToken(refreshToken);
+
+        refreshTokenService.invalidateRefreshToken(email, refreshToken);
+
+        deleteCookie(response, "ACCESS_TOKEN");
+        deleteCookie(response, "REFRESH_TOKEN");
+    }
+
+    private void deleteCookie(HttpServletResponse response, String name) {
+        Cookie cookie = new Cookie(name, null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
 }
