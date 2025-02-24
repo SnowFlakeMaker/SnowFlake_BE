@@ -1,4 +1,4 @@
-package sookmyung.noonsongmaker.Dto.UserProfile;
+package sookmyung.noonsongmaker.Dto.intro;
 
 import lombok.Getter;
 import sookmyung.noonsongmaker.Entity.UserProfile;

@@ -1,9 +1,7 @@
-package sookmyung.noonsongmaker.Service;
+package sookmyung.noonsongmaker.Service.intro;
 
 import org.springframework.data.util.Pair;
-import sookmyung.noonsongmaker.Dto.UserProfile.UserProfileRequest;
-import sookmyung.noonsongmaker.Dto.UserProfile.UserProfileResponse;
-import sookmyung.noonsongmaker.Entity.Chapter;
+import sookmyung.noonsongmaker.Dto.intro.UserProfileRequest;
 import sookmyung.noonsongmaker.Entity.StatusInfo;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Entity.UserProfile;
@@ -19,7 +17,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-public class UserProfileService {
+public class IntroService {
 
     private final UserProfileRepository userProfileRepository;
     private final StatusInfoRepository statusInfoRepository;

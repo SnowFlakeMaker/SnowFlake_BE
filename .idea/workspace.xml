@@ -32,6 +32,13 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -104,7 +111,7 @@
       <updated>1740378241769</updated>
       <workItem from="1740378242752" duration="21000" />
       <workItem from="1740378265731" duration="35000" />
-      <workItem from="1740378310997" duration="405000" />
+      <workItem from="1740378310997" duration="3584000" />
     </task>
     <servers />
   </component>

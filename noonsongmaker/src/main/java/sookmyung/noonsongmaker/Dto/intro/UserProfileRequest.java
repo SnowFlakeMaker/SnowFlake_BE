@@ -1,4 +1,4 @@
-package sookmyung.noonsongmaker.Dto.UserProfile;
+package sookmyung.noonsongmaker.Dto.intro;
 
 import lombok.Data;
 import sookmyung.noonsongmaker.Entity.MBTI;

@@ -1,4 +1,4 @@
-package sookmyung.noonsongmaker.Service;
+package sookmyung.noonsongmaker.Service.intro;
 
 import sookmyung.noonsongmaker.Entity.MBTI;
 import sookmyung.noonsongmaker.Entity.StatusInfo;
