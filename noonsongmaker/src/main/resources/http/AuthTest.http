@@ -1,0 +1,49 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+
+### Email Varification
+# @no-cookie-jar
+POST http://localhost:8080/auth/send-email
+Content-Type: application/json
+
+{
+  "emailId": "숙명메일아이디"
+}
+
+### Email Varification
+# @no-cookie-jar
+POST http://localhost:8080/auth/verify-code
+Content-Type: application/json
+
+{
+  "emailId": "숙명메일아이디",
+  "code": "인증코드"
+}
+
+### Sign Up
+# @no-cookie-jar
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+
+{
+  "email": "숙명메일아이디",
+  "password": "1234"
+}
+
+### Login
+# @no-cookie-jar
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "숙명메일아이디",
+  "password": "1234"
+}
+
+### Refresh
+# @no-cookie-jar
+POST http://localhost:8080/auth/refresh
+Content-Type: application/json
+Cookie: REFRESH_TOKEN=리프레쉬토큰
