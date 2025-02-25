@@ -25,6 +25,6 @@ public class MainController {
     @GetMapping("/player/{userId}")
     public ResponseEntity<Response<PlayerInfoResponseDto>> getPlayerInfo(@PathVariable Long userId) {
         PlayerInfoResponseDto playerInfo = mainInfoService.getPlayerInfo(userId);
-        return ResponseEntity.ok(new Response<>("플레이어 정보", playerInfo));
+        return ResponseEntity.ok(new Response<>("플레이어 정보를 조회합니다.", playerInfo));
     }
 }
