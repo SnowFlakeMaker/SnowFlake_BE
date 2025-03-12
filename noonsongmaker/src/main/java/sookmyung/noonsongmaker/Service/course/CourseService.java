@@ -1,4 +1,4 @@
-package sookmyung.noonsongmaker.Service;
+package sookmyung.noonsongmaker.Service.course;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +63,9 @@ public class CourseService {
         Course course = courseRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("수강 정보 소유자 없음"));
 
-        course.updateCourse(requestDto);
+
+        course.updateCredits(requestDto.getCoreCredits(), requestDto.getElectiveCredits());
+        course.updateRequired(requestDto.getRequiredDigital(), requestDto.getRequiredFuture(), requestDto.getRequiredEng(), requestDto.getRequiredLogic());
+        course.updateCore(requestDto.getCore1(), requestDto.getCore2(), requestDto.getCore3(), requestDto.getCore4());
     }
 }
