@@ -1,6 +1,5 @@
 package sookmyung.noonsongmaker.Controller;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +10,7 @@ import sookmyung.noonsongmaker.Dto.course.CreditResponseDto;
 import sookmyung.noonsongmaker.Dto.course.RequiredResponseDto;
 import sookmyung.noonsongmaker.Dto.course.TimetableSubmitRequestDto;
 import sookmyung.noonsongmaker.Entity.User;
-import sookmyung.noonsongmaker.Service.CourseService;
+import sookmyung.noonsongmaker.Service.course.CourseService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
 
 import java.util.HashMap;
