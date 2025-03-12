@@ -2,7 +2,6 @@ package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import sookmyung.noonsongmaker.Dto.course.TimetableSubmitRequestDto;
 
 @Entity
 @Getter
@@ -34,22 +33,36 @@ public class Course {
     private Short core3;
     private Short core4;
 
-    public void updateCredits(Integer core, Integer elective) {
-        if (core != null) this.coreCredits = core;
-        if (elective != null) this.electiveCredits = elective;
+    public void updateCoreCredits(Integer core) {
+        if (core != null) this.coreCredits += core;
+    }
+    public void updateElectiveCredits(Integer elective) {
+        if (elective != null) this.electiveCredits += elective;
     }
 
-    public void updateRequired(Boolean digital, Boolean future, Boolean eng, Boolean logic) {
+    public void updateRequiredDigital(Boolean digital) {
         if (digital != null) this.requiredDigital = digital;
+    }
+    public void updateRequiredFuture(Boolean future) {
         if (future != null) this.requiredFuture = future;
+    }
+    public void updateRequiredEng(Boolean eng) {
         if (eng != null) this.requiredEng = eng;
+    }
+    public void updateRequiredLogic(Boolean logic) {
         if (logic != null) this.requiredLogic = logic;
     }
 
-    public void updateCore(Short core1, Short core2, Short core3, Short core4) {
-        if (core1 != null) this.core1 = core1;
-        if (core2 != null) this.core2 = core2;
-        if (core3 != null) this.core3 = core3;
-        if (core4 != null) this.core4 = core4;
+    public void updateCore1(Short core1) {
+        if (core1 != null) this.core1 = (short)(this.core1 + core1);
+    }
+    public void updateCore2(Short core2) {
+        if (core2 != null) this.core2 = (short)(this.core2 + core2);
+    }
+    public void updateCore3(Short core3) {
+        if (core3 != null) this.core3 = (short)(this.core3 + core3);
+    }
+    public void updateCore4(Short core4) {
+        if (core4 != null) this.core4 = (short)(this.core4 + core4);
     }
 }
