@@ -62,10 +62,43 @@ public class CourseService {
     public void updateTimetable(User user, TimetableSubmitRequestDto requestDto) {
         Course course = courseRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("수강 정보 소유자 없음"));
+        TimetableUpdatePolicy policy = new TimetableUpdatePolicy(user.getCurrentChapter());
 
+        if (requestDto.getCoreCredits() != null && policy.isMajorUpdatePossible()) {
+            course.updateCoreCredits(requestDto.getCoreCredits());
+            // TODO responseDto에 결과 저장 : 프론트와 형식 협의 필요
+        }
+        if (requestDto.getElectiveCredits() != null && policy.isMajorUpdatePossible()) {
+            course.updateElectiveCredits(requestDto.getElectiveCredits());
+        }
 
-        course.updateCredits(requestDto.getCoreCredits(), requestDto.getElectiveCredits());
-        course.updateRequired(requestDto.getRequiredDigital(), requestDto.getRequiredFuture(), requestDto.getRequiredEng(), requestDto.getRequiredLogic());
-        course.updateCore(requestDto.getCore1(), requestDto.getCore2(), requestDto.getCore3(), requestDto.getCore4());
+        if (requestDto.getRequiredDigital() != null && policy.isLibUpdatePossible()) {
+            course.updateRequiredDigital(requestDto.getRequiredDigital());
+        }
+        if (requestDto.getRequiredFuture() != null && policy.isLibUpdatePossible()) {
+            course.updateRequiredFuture(requestDto.getRequiredFuture());
+        }
+        if (requestDto.getRequiredEng() != null && policy.isLibUpdatePossible()) {
+            course.updateRequiredEng(requestDto.getRequiredEng());
+        }
+        if (requestDto.getRequiredLogic() != null && policy.isLibUpdatePossible()) {
+            course.updateRequiredLogic(requestDto.getRequiredLogic());
+        }
+
+        if (requestDto.getCore1() != null && policy.isLibUpdatePossible()) {
+            course.updateCore1(requestDto.getCore1());
+        }
+        if (requestDto.getCore2() != null && policy.isLibUpdatePossible()) {
+            course.updateCore2(requestDto.getCore2());
+        }
+        if (requestDto.getCore3() != null && policy.isLibUpdatePossible()) {
+            course.updateCore3(requestDto.getCore3());
+        }
+        if (requestDto.getCore4() != null && policy.isLibUpdatePossible()) {
+            course.updateCore4(requestDto.getCore4());
+        }
+
+        // TODO 시간표 저장 : 장학금 코드에서 시간표 데이터 어떻게 받는지 확인 필요, 저장할 필요 없으면 미구현할 것
+        // TODO 결과 리턴
     }
 }
