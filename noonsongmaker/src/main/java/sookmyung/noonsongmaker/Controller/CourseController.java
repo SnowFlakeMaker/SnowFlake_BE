@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sookmyung.noonsongmaker.Dto.Response;
-import sookmyung.noonsongmaker.Dto.course.CoreResponseDto;
-import sookmyung.noonsongmaker.Dto.course.CreditResponseDto;
-import sookmyung.noonsongmaker.Dto.course.RequiredResponseDto;
-import sookmyung.noonsongmaker.Dto.course.TimetableSubmitRequestDto;
+import sookmyung.noonsongmaker.Dto.course.*;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Service.course.CourseService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
@@ -51,8 +48,8 @@ public class CourseController {
     }
 
     @PatchMapping("/submit")
-    public ResponseEntity<Response<String>> submitTimetable(@CurrentUser User user, @RequestBody TimetableSubmitRequestDto timetableSubmitRequestDto) {
-        courseService.updateTimetable(user, timetableSubmitRequestDto);
-        return ResponseEntity.ok(Response.buildResponse(null, "확정 시간표"));
+    public ResponseEntity<Response<TimetableSubmitResponseDto>> submitTimetable(@CurrentUser User user, @RequestBody TimetableSubmitRequestDto timetableSubmitRequestDto) {
+        TimetableSubmitResponseDto responseDto = courseService.updateTimetable(user, timetableSubmitRequestDto);
+        return ResponseEntity.ok(Response.buildResponse(responseDto, "확정 시간표"));
     }
 }
