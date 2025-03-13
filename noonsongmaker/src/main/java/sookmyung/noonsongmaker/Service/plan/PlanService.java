@@ -40,6 +40,10 @@ public class PlanService {
         return response;
     }
 
+    public void getSpecialPlan(User user) {
+        // 
+    }
+
     private PlanExecuteResponseDto applyPlanAndCollectResult(StatusInfo status, String taskName, Plan plan) {
         List<Effect> effects = effectRepository.findAllByPlan(plan);
         PlanExecuteResponseDto result = new PlanExecuteResponseDto(taskName);
