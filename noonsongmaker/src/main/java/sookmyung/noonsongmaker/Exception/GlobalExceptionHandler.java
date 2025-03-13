@@ -3,11 +3,13 @@ package sookmyung.noonsongmaker.Exception;
 import sookmyung.noonsongmaker.Dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
+//import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.naming.AuthenticationException;
 import java.nio.file.AccessDeniedException;
 import java.util.NoSuchElementException;
 
@@ -63,6 +65,16 @@ public class GlobalExceptionHandler {
                 null
         );
         return ResponseEntity.status(404).body(response);
+    }
+
+    // 404 Not Found (잘못된 URL 요청)
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Response<Object>> handleNotFoundException(NoHandlerFoundException ex) {
+        Response<Object> response = new Response<>(
+                "요청한 URL을 찾을 수 없습니다.",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     // 500 Internal Server Error
