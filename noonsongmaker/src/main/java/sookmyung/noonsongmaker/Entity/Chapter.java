@@ -22,7 +22,7 @@ public enum Chapter {
 
     public int getSemester() {
         return semester;
-
+    }
 
     @JsonValue
     public String toJson() {

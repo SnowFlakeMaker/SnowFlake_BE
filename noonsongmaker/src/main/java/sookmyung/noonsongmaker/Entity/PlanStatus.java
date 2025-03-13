@@ -29,4 +29,12 @@ public class PlanStatus {
     @Builder.Default
     @Column(nullable = false)
     private int remainingSemesters = 16;
+
+    public void setActivated(boolean activated) {
+        this.isActivated = activated;
+    }
+
+    public void setRemainingSemesters(int remainingSemesters) {
+        this.remainingSemesters = remainingSemesters;
+    }
 }

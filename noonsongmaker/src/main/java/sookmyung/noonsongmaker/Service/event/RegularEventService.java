@@ -9,6 +9,7 @@ import sookmyung.noonsongmaker.Dto.event.CoinResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
+import sookmyung.noonsongmaker.Service.plan.PlanService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,6 +26,7 @@ public class RegularEventService {
     private final EventService eventService;
     private final EventChaptersRepository eventChaptersRepository;
     private final EventRepository eventRepository;
+    private final PlanStatusRepository planStatusRepository;
 
     private static final double CLUB_SELECTION_PROBABILITY = 0.8;
 
@@ -195,16 +197,17 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 방학 일정에서 "봉사" 횟수 체크
+        // 방학 일정에서 "봉사" 활동 확인
         List<Schedule> vacationSchedules = scheduleRepository.findByUserIdAndIsVacation(userId, true);
+
         long serviceCount = vacationSchedules.stream()
-                .flatMap(schedule -> schedule.getPlans().stream())
-                .filter(plan -> plan.getPlanName() != null && plan.getPlanName().equals("봉사")) // ✅ "봉사" 활동만 필터링
+                .map(Schedule::getPlan)
+                .filter(plan -> plan.getPlanName() != null && plan.getPlanName().equals("봉사"))
                 .count();
 
-        // 방학 중 봉사 활동 2칸 이상이면 성적 장학금 지급 가능
+        // 2칸 이상이면 성적 장학금 지급 가능
         if (statusInfo.isEligibleForMeritScholarship() && serviceCount >= 2) {
-            statusInfo.setEligibleForMeritScholarship(true); // 유지
+            statusInfo.setEligibleForMeritScholarship(true);  // 유지
         } else {
             statusInfo.setEligibleForMeritScholarship(false); // 봉사 시간 부족 → 지급 불가
         }
@@ -304,14 +307,26 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-        // 계획표에 추가 - 1년 유지
-        Plan majorClubPlan = Plan.builder()
-                .planName("전공 학회 활동")
-                .period(Period.ACADEMIC)
-                .remainingSemesters(4)
+        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+        Plan majorClubPlan = planRepository.findByUserAndPlanName(user, "전공 학회 활동")
+                .orElseGet(() -> {
+                    Plan newPlan = Plan.builder()
+                            .planName("전공 학회 활동")
+                            .period(Period.ACADEMIC)
+                            .user(user)
+                            .build();
+                    return planRepository.save(newPlan);
+                });
+
+        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
+        PlanStatus majorClubPlanStatus = PlanStatus.builder()
+                .plan(majorClubPlan)
                 .user(user)
+                .isActivated(true)
+                .remainingSemesters(4) // 1년(2학기) 동안 유지
                 .build();
-        planRepository.save(majorClubPlan);
+
+        planStatusRepository.save(majorClubPlanStatus);
     }
 
     // 대외활동 지원
@@ -328,25 +343,33 @@ public class RegularEventService {
             throw new IllegalArgumentException("현재 학기에는 대외활동 지원이 불가능합니다.");
         }
 
-        // 지원 조건 확인 (사회성 40 이상)
         if (statusInfo.getSocial() < 40) {
             throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
         }
 
-        // 계획표에 추가 - 1년 유지
+        // 계획표 추가
         Plan externalActivityPlan = Plan.builder()
                 .planName("대외활동")
                 .period(Period.ACADEMIC) // 학기 중 활동
-                .remainingSemesters(4)
                 .user(user)
                 .build();
         planRepository.save(externalActivityPlan);
+
+        // 계획 상태 추가 - 1년 유지
+        PlanStatus planStatus = PlanStatus.builder()
+                .plan(externalActivityPlan)
+                .user(user)
+                .isActivated(true)
+                .remainingSemesters(4)
+                .build();
+        planStatusRepository.save(planStatus);
     }
 
     @Transactional
     public Response<String> applyForLeadershipGroup(Long userId) {
         User user = getUser(userId);
 
+        // 이벤트 존재 여부 확인
         Event leadershipEvent = eventRepository.findByName("리더십그룹 지원")
                 .orElseThrow(() -> new IllegalArgumentException("리더십그룹 지원 이벤트가 존재하지 않습니다."));
 
@@ -356,25 +379,36 @@ public class RegularEventService {
             throw new IllegalArgumentException("이미 리더십그룹에 가입되어 있거나, 지원이 불가능합니다.");
         }
 
+        // 합격 확률 설정 (디폴트 80%)
         float selectionProbability = leadershipEvent.getProbability() != null ? leadershipEvent.getProbability() : 0.8f;
 
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
-            return Response.buildResponse(null,"리더십그룹 지원 불합격");
+            return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-        // 리더십 그룹 활동을 계획표에 추가
-        Plan leadershipPlan = Plan.builder()
-                .planName("리더십그룹 활동")
-                .period(Period.ACADEMIC)
-                .remainingSemesters(4)
+        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+        Plan leadershipPlan = planRepository.findByUserAndPlanName(user, "리더십그룹 활동")
+                .orElseGet(() -> {
+                    Plan newPlan = Plan.builder()
+                            .planName("리더십그룹 활동")
+                            .period(Period.ACADEMIC)
+                            .user(user)
+                            .build();
+                    return planRepository.save(newPlan);
+                });
+
+        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
+        PlanStatus leadershipPlanStatus = PlanStatus.builder()
+                .plan(leadershipPlan)
                 .user(user)
+                .isActivated(true)
+                .remainingSemesters(4)
                 .build();
-        planRepository.save(leadershipPlan);
 
-        eventChaptersRepository.deleteByEventAndActivatedChapter(leadershipEvent, user.getCurrentChapter());
+        planStatusRepository.save(leadershipPlanStatus);
 
-        return Response.buildResponse(null,"리더십그룹 합격. 활동이 추가되었습니다.");
+        return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
     }
 
     public List<String> getAvailableEvents(Long userId) {
