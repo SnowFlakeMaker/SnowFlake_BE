@@ -1,11 +1,9 @@
 package sookmyung.noonsongmaker.Controller;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
@@ -28,5 +26,11 @@ public class PlanController {
         List<PlanExecuteResponseDto> response = planService.executePlan(requestDto, user);
 
         return ResponseEntity.ok(Response.buildResponse(response, "성공"));
+    }
+
+    @GetMapping("/specialist")
+    public ResponseEntity<Response<String>> getSpecialist(@CurrentUser User user) {
+
+        return ResponseEntity.ok(Response.buildResponse(null, "이번 학기 추가 가능한 특별 계획"));
     }
 }
