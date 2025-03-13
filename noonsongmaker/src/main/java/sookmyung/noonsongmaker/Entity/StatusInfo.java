@@ -53,4 +53,33 @@ public class StatusInfo {
     @Builder.Default
     @ColumnDefault("20")
     private Integer globalAssess = 0;
+
+
+    public void updateIntelligence(int amount) {
+        this.intelligence += amount;
+    }
+
+    public void updateForeignLang(int amount) {
+        this.foreignLang += amount;
+    }
+
+    public void updateGrit(int amount) {
+        this.grit += amount;
+    }
+
+    public void updateStrength(int amount) {
+        this.strength += amount;
+    }
+
+    public void updateSocial(int amount) {
+        this.social += amount;
+    }
+
+    public void updateStress(int amount) {
+        this.stress += amount;
+    }
+
+    public void updateLeadership(int amount) {
+        this.leadership += amount;
+    }
 }

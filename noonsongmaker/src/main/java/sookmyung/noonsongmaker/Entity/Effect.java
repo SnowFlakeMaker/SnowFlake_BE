@@ -23,6 +23,9 @@ public class Effect {
     @Column(nullable = false)
     private boolean isPlan;
 
+    @Enumerated(EnumType.STRING)
+    private StatusName statusName;
+
     @Column(nullable = true)
     private Short changeAmount;
 }
