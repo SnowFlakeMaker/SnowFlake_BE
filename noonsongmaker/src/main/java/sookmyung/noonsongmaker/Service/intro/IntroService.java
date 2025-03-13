@@ -2,9 +2,11 @@ package sookmyung.noonsongmaker.Service.intro;
 
 import org.springframework.data.util.Pair;
 import sookmyung.noonsongmaker.Dto.intro.UserProfileRequest;
+import sookmyung.noonsongmaker.Entity.Course;
 import sookmyung.noonsongmaker.Entity.StatusInfo;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Entity.UserProfile;
+import sookmyung.noonsongmaker.Repository.CourseRepository;
 import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
 import sookmyung.noonsongmaker.Repository.UserProfileRepository;
 //import Repository.UserRepository;
@@ -23,6 +25,7 @@ public class IntroService {
     private final StatusInfoRepository statusInfoRepository;
     private final MBTIStatusService mbtiStatusService;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     @Transactional
     public Pair<UserProfile, StatusInfo> createUserProfile(Long userId, UserProfileRequest request) {
@@ -47,6 +50,23 @@ public class IntroService {
         userProfile.setHobby(request.getHobby());
         userProfile.setDream(request.getDream());
         userProfileRepository.save(userProfile);
+
+        // Course 객체 생성 및 초기화
+        Course course = Course.builder()
+                .user(user)
+                .coreCredits(0)
+                .electiveCredits(0)
+                .requiredDigital(false)
+                .requiredFuture(false)
+                .requiredEng(false)
+                .requiredLogic(false)
+                .core1((short) 0)
+                .core2((short) 0)
+                .core3((short) 0)
+                .core4((short) 0)
+                .build();
+
+        courseRepository.save(course);
 
         // MBTI에 따른 초기 스탯 설정
         StatusInfo statusInfo = mbtiStatusService.createInitialStatus(user, request.getMbti());
