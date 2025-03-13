@@ -1,27 +1,16 @@
-package sookmyung.noonsongmaker.Dto.main;
-
+package sookmyung.noonsongmaker.Dto.event;
 import lombok.Getter;
 import sookmyung.noonsongmaker.Entity.MajorType;
 import sookmyung.noonsongmaker.Entity.UserProfile;
 
 @Getter
-public class PlayerInfoResponseDto {
-    private final String nickname;
-    private final String major;
-    private final String majorType;
-    private final String birthday;
-    private final String mbti;
-    private final String hobby;
-    private final String dream;
+public class MajorInfoResponseDto {
+    private final String major;       // 전공 이름 (ex. "컴퓨터공학과")
+    private final String majorType;   // 전공 유형 (ex. "복수전공" / "부전공" / "심화전공" / "미정")
 
-    public PlayerInfoResponseDto(UserProfile userProfile) {
-        this.nickname = userProfile.getNickname();
+    public MajorInfoResponseDto(UserProfile userProfile) {
         this.major = userProfile.getMajor();
         this.majorType = convertMajorType(userProfile.getMajorType());
-        this.birthday = userProfile.getBirthday();
-        this.mbti = userProfile.getMbti().name();
-        this.hobby = userProfile.getHobby();
-        this.dream = userProfile.getDream();
     }
 
     private String convertMajorType(MajorType majorType) {

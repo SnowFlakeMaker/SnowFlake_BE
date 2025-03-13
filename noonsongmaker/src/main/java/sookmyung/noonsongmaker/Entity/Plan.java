@@ -1,21 +1,24 @@
 package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
-@Table(name = "plans")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Plan {
 
     @Id
     @Column(name = "plan_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // User 연관관계 추가
+    private User user;
 
     @Column(nullable = true)
     private String planName;
@@ -27,8 +30,9 @@ public class Plan {
     @Column(nullable = false)
     private boolean isActivated = true;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int remainingSemesters = 16;
+
 }
 
-enum Period {
-    ACADEMIC, VACATION, BOTH, SPECIAL
-}
