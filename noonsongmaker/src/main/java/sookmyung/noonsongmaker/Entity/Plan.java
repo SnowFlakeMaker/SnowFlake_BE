@@ -27,12 +27,5 @@ public class Plan {
     @Column(nullable = true)
     private Period period;
 
-    @Column(nullable = false)
-    private boolean isActivated = true;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private int remainingSemesters = 16;
-
 }
 

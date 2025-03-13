@@ -1,19 +1,17 @@
 package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "schedules")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Schedule {
-
     @Id
     @Column(name = "schedule_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +30,11 @@ public class Schedule {
 
     @Column(nullable = false)
     private int count;
+
+    public Schedule(Plan plan, User user, Chapter currentChapter, int count) {
+        this.plan = plan;
+        this.user = user;
+        this.currentChapter = currentChapter;
+        this.count = count;
+    }
 }

@@ -124,5 +124,32 @@ public class StatusInfo {
             throw new RuntimeException("존재하지 않는 스탯 필드: " + fieldName, e);
         }
     }
+    public void updateIntelligence(int amount) {
+        this.intelligence += amount;
+    }
+
+    public void updateForeignLang(int amount) {
+        this.foreignLang += amount;
+    }
+
+    public void updateGrit(int amount) {
+        this.grit += amount;
+    }
+
+    public void updateStrength(int amount) {
+        this.strength += amount;
+    }
+
+    public void updateSocial(int amount) {
+        this.social += amount;
+    }
+
+    public void updateStress(int amount) {
+        this.stress += amount;
+    }
+
+    public void updateLeadership(int amount) {
+        this.leadership += amount;
+    }
 
 }

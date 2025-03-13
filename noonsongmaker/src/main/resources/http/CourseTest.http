@@ -1,0 +1,8 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### 직전 학기까지의 수강 정보 반환
+GET http://localhost:8080/course/main
+Content-Type: application/json
+Cookie: ACCESS_TOKEN=

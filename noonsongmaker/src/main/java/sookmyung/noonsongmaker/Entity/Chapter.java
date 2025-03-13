@@ -1,5 +1,7 @@
 package sookmyung.noonsongmaker.Entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum Chapter {
     SEM_S_1("1학년 1학기", 1), VAC_S_1("1학년 여름방학", 1), SEM_W_1("1학년 2학기", 2), VAC_W_1("1학년 겨울방학", 2),
     SEM_S_2("2학년 1학기", 3), VAC_S_2("2학년 여름방학", 3), SEM_W_2("2학년 2학기", 4), VAC_W_2("2학년 겨울방학", 4),
@@ -20,5 +22,11 @@ public enum Chapter {
 
     public int getSemester() {
         return semester;
+
+
+    @JsonValue
+    public String toJson() {
+        return this.name();
+
     }
 }
