@@ -23,13 +23,5 @@ public class Plan {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private Period period;
-
-    @Column(nullable = false)
-    private boolean isActivated = true;
-
-}
-
-enum Period {
-    ACADEMIC, VACATION, BOTH, SPECIAL
 }
 
