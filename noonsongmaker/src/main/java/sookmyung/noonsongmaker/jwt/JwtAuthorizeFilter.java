@@ -27,6 +27,8 @@ public class JwtAuthorizeFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+
         String jwt = jwtProvider.resolveToken(request);
 
         if (jwt != null && jwtProvider.validateToken(jwt)) {
@@ -35,8 +37,11 @@ public class JwtAuthorizeFilter extends OncePerRequestFilter {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
+
+            UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(user, null, List.of());
+                    new UsernamePasswordAuthenticationToken(userDetails, null, List.of());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

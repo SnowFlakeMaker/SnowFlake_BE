@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import sookmyung.noonsongmaker.Repository.UserRepository;
 import sookmyung.noonsongmaker.jwt.JwtAuthorizeFilter;
 import sookmyung.noonsongmaker.jwt.JwtProvider;
@@ -38,13 +39,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
+                .securityContext(securityContext -> securityContext
+                        .requireExplicitSave(false)  // SecurityContext 자동 저장 활성화
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청 허용
+                        .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안 함
                 .httpBasic(AbstractHttpConfigurer::disable) // HTTP Basic 인증 비활성화
-                .formLogin(AbstractHttpConfigurer::disable); // 기본 로그인 폼 비활성화
-        //             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 폼 비활성화
+                .addFilterBefore(new JwtAuthorizeFilter(jwtProvider, userRepository), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
