@@ -20,7 +20,6 @@ public class PlanService {
     private final EffectRepository effectRepository;
     private final ScheduleRepository scheduleRepository;
 
-
     public List<PlanExecuteResponseDto> executePlan(List<PlanExecuteRequestDto> requestDto, User user) {
         List<PlanExecuteResponseDto> response = new ArrayList<>();
         StatusInfo status = statusInfoRepository.findByUser(user)
@@ -31,27 +30,41 @@ public class PlanService {
             Plan plan = planRepository.findByPlanName(task.getTaskName())
                     .orElseThrow(() -> new IllegalArgumentException("Plan not found: " + task.getTaskName()));
             planCounts.merge(plan, 1, Integer::sum);
-            List<Effect> effects = effectRepository.findAllByPlan(plan);
-            PlanExecuteResponseDto dailyResult = new PlanExecuteResponseDto(task.getTaskName());
-
-            for (Effect effect : effects) {
-                switch (effect.getStatusName()) {
-                    case INTELLIGENCE -> status.updateIntelligence(effect.getChangeAmount());
-                    case FOREIGNLANG -> status.updateForeignLang(effect.getChangeAmount());
-                    case GRIT -> status.updateGrit(effect.getChangeAmount());
-                    case STRENGTH -> status.updateStrength(effect.getChangeAmount());
-                    case SOCIAL -> status.updateSocial(effect.getChangeAmount());
-                    case STRESS -> status.updateStress(effect.getChangeAmount());
-                    case LEADERSHIP -> status.updateLeadership(effect.getChangeAmount());
-                }
-                dailyResult.addEffect(effect.getStatusName(), effect.getChangeAmount());
-            }
-
-            response.add(dailyResult);
+            PlanExecuteResponseDto result = applyPlanAndCollectResult(status, task.getTaskName(), plan);
+            response.add(result);
         }
 
         statusInfoRepository.save(status);
+        savePlanCounts(planCounts, user);
 
+        return response;
+    }
+
+    private PlanExecuteResponseDto applyPlanAndCollectResult(StatusInfo status, String taskName, Plan plan) {
+        List<Effect> effects = effectRepository.findAllByPlan(plan);
+        PlanExecuteResponseDto result = new PlanExecuteResponseDto(taskName);
+
+        for (Effect effect : effects) {
+            applyEffect(status, effect);
+            result.addEffect(effect.getStatusName(), effect.getChangeAmount());
+        }
+
+        return result;
+    }
+
+    private void applyEffect(StatusInfo status, Effect effect) {
+        switch (effect.getStatusName()) {
+            case INTELLIGENCE -> status.updateIntelligence(effect.getChangeAmount());
+            case FOREIGNLANG -> status.updateForeignLang(effect.getChangeAmount());
+            case GRIT -> status.updateGrit(effect.getChangeAmount());
+            case STRENGTH -> status.updateStrength(effect.getChangeAmount());
+            case SOCIAL -> status.updateSocial(effect.getChangeAmount());
+            case STRESS -> status.updateStress(effect.getChangeAmount());
+            case LEADERSHIP -> status.updateLeadership(effect.getChangeAmount());
+        }
+    }
+
+    private void savePlanCounts(Map<Plan, Integer> planCounts, User user) {
         for (Map.Entry<Plan, Integer> entry : planCounts.entrySet()) {
             Schedule schedule = Schedule.builder()
                     .plan(entry.getKey())
@@ -59,10 +72,7 @@ public class PlanService {
                     .count(entry.getValue())
                     .currentChapter(user.getCurrentChapter())
                     .build();
-
             scheduleRepository.save(schedule);
         }
-
-        return response;
     }
 }
