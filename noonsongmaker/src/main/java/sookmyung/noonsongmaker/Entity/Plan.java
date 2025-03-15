@@ -3,12 +3,10 @@ package sookmyung.noonsongmaker.Entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "plans")
 @Getter
-@Setter
 @NoArgsConstructor
 public class Plan {
 
@@ -24,4 +22,3 @@ public class Plan {
     @Column(nullable = true)
     private Period period;
 }
-
