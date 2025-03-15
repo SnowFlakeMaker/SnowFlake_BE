@@ -7,6 +7,8 @@ import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Service
@@ -29,6 +31,7 @@ public class OneTimeEventService {
     private final EventChaptersRepository eventChaptersRepository;
     private final CourseRepository courseRepository;
     private final UserProfileRepository userProfileRepository;
+    private final PlanStatusRepository planStatusRepository;
 
     private static final double STUDENT_COUNCIL_SELECTION_PROBABILITY = 0.8;
 
@@ -60,22 +63,33 @@ public class OneTimeEventService {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
+/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+        Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
+                .orElseGet(() -> {
+                    Plan newPlan = Plan.builder()
+                            .planName("학생회 활동")
+                            .period(Period.ACADEMIC)
+                            .user(user)
+                            .build();
+                    return planRepository.save(newPlan);
+                });
 
-        // 계획표에 "학생회 활동" 추가 (2학기 동안 유지)
-        Plan studentCouncilPlan = Plan.builder()
-                .planName("학생회 활동")
-                .period(Period.ACADEMIC) // 학기 중 활동 가능
-                .remainingSemesters(4) // 현재 학기 + 다음 학기까지 유지
+        // lanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
+        PlanStatus studentCouncilPlanStatus = PlanStatus.builder()
+                .plan(studentCouncilPlan)
                 .user(user)
+                .isActivated(true)
+                .remainingSemesters(4) // 1년(2학기) 동안 유지
                 .build();
 
-        planRepository.save(studentCouncilPlan);
+        planStatusRepository.save(studentCouncilPlanStatus);*/
         eventChaptersRepository.deleteByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
 
         return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
     }
 
-    public Response<Boolean> checkGraduationEligibility(Long userId) {
+    @Transactional
+    public Response<Map<String, Object>> checkGraduationEligibility(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
 
@@ -86,68 +100,97 @@ public class OneTimeEventService {
                 .orElseThrow(() -> new NoSuchElementException("유저 프로필을 찾을 수 없습니다."))
                 .getMajorType();
 
-        // 교양필수 학점 계산 (모두 들어야 함 → 3학점씩 4과목 = 12학점)
+        Map<String, Object> response = new HashMap<>();
+        boolean isGraduatable = true;
+
+        // 교양 필수(12학점) 체크 (모든 과목을 들어야 함)
         boolean hasCompletedGeneralEducation =
-                Boolean.TRUE.equals(course.getIsRequiredDigital()) &&
-                        Boolean.TRUE.equals(course.getIsRequiredFuture()) &&
-                        Boolean.TRUE.equals(course.getIsRequiredEng()) &&
-                        Boolean.TRUE.equals(course.getIsRequiredLogic());
+                Boolean.TRUE.equals(course.getRequiredDigital()) &&
+                        Boolean.TRUE.equals(course.getRequiredFuture()) &&
+                        Boolean.TRUE.equals(course.getRequiredEng()) &&
+                        Boolean.TRUE.equals(course.getRequiredLogic());
 
-        int generalEducationCredits = hasCompletedGeneralEducation ? REQUIRED_GENERAL_EDU_CREDITS : 0;
+        int generalEducationCredits = hasCompletedGeneralEducation ? REQUIRED_GENERAL_EDU_CREDITS : 0; // 12학점
 
-        // 교양핵심 학점 계산 (4개 영역 중 2개 이상 선택 & 총 15학점 이상)
+        if (!hasCompletedGeneralEducation) {
+            response.put("교양 필수 부족", "디지털, 미래, 영어, 논리 과목을 모두 수강해야 합니다.");
+            isGraduatable = false;
+        }
+
+        // 교양 핵심 (최소 2개 영역 선택 & 총 15학점 이상)
         int coreAreasCompleted = 0;
         int totalCoreAreaCredits = 0;
 
-        if (course.getIsCore1() > 0) {
+        if (course.getCore1() > 0) {
             coreAreasCompleted++;
-            totalCoreAreaCredits += course.getIsCore1();
+            totalCoreAreaCredits += course.getCore1();
         }
-        if (course.getIsCore2() > 0) {
+        if (course.getCore2() > 0) {
             coreAreasCompleted++;
-            totalCoreAreaCredits += course.getIsCore2();
+            totalCoreAreaCredits += course.getCore2();
         }
-        if (course.getIsCore3() > 0) {
+        if (course.getCore3() > 0) {
             coreAreasCompleted++;
-            totalCoreAreaCredits += course.getIsCore3();
+            totalCoreAreaCredits += course.getCore3();
         }
-        if (course.getIsCore4() > 0) {
+        if (course.getCore4() > 0) {
             coreAreasCompleted++;
-            totalCoreAreaCredits += course.getIsCore4();
+            totalCoreAreaCredits += course.getCore4();
         }
 
         boolean hasCompletedCoreArea = coreAreasCompleted >= REQUIRED_CORE_AREA_COUNT && totalCoreAreaCredits >= REQUIRED_CORE_AREA_CREDITS;
 
-        // 필(24학점) & 전선(39학점) 학점 확인
-        boolean hasCompletedMajorCourses =
-                course.getCoreCredits() >= REQUIRED_CORE_CREDITS &&
-                        course.getElectiveCredits() >= REQUIRED_ELECTIVE_CREDITS;
-
-        // 추가 전공(복전/부전) 학점 계산
-        int additionalMajorRequirement = 0;
-
-        if (majorType == MajorType.DOUBLE_MAJOR) {
-            additionalMajorRequirement = DOUBLE_MAJOR_EXTRA_CREDITS;  // 42학점 추가
-        } else if (majorType == MajorType.SUB_MAJOR) {
-            additionalMajorRequirement = SUB_MAJOR_EXTRA_CREDITS;  // 21학점 추가
+        if (!hasCompletedCoreArea) {
+            response.put("교양 핵심 부족", "교양 핵심 과목 중 2개 이상 선택하여 총 15학점 이상 들어야 합니다.");
+            isGraduatable = false;
         }
 
-        // 총 학점 계산 (전필 + 전선 + 교필 + 교핵 포함)
+        // 기본 전공 필수 & 선택 학점 검증 (단일 전공 기준)
+        boolean hasCompletedBaseMajorCourses =
+                course.getCoreCredits() >= REQUIRED_CORE_CREDITS &&  // 전필(24)
+                        course.getElectiveCredits() >= REQUIRED_ELECTIVE_CREDITS; // 전선(39)
+
+
+        if (!hasCompletedBaseMajorCourses) {
+            response.put("전공 학점 부족", "전필 24학점, 전선 39학점을 충족해야 합니다.");
+            isGraduatable = false;
+        }
+
+        // 복수전공/부전공 추가 학점 설정 (전필+전선 합 기준)
+        int requiredMajorCredits = REQUIRED_CORE_CREDITS + REQUIRED_ELECTIVE_CREDITS; // 24(전필) + 39(전선) = 63학점
+
+        if (majorType == MajorType.DOUBLE_MAJOR) {
+            requiredMajorCredits += DOUBLE_MAJOR_EXTRA_CREDITS;  // 복전: +42 (총 105학점)
+        } else if (majorType == MajorType.SUB_MAJOR) {
+            requiredMajorCredits += SUB_MAJOR_EXTRA_CREDITS;  // 부전: +21 (총 84학점)
+        }
+
+        // 전필 + 전선 학점 검증 (복수전공/부전공 추가 기준 포함)
+        boolean hasCompletedTotalMajorCourses =
+                (course.getCoreCredits() + course.getElectiveCredits()) >= requiredMajorCredits;
+
+
+        if (!hasCompletedTotalMajorCourses) {
+            response.put("추가 전공 학점 부족", String.format("현재 %d학점, 필요 학점: %d",
+                    (course.getCoreCredits() + course.getElectiveCredits()), requiredMajorCredits));
+            isGraduatable = false;
+        }
+
+        // 총 학점 계산 (교필 + 교핵 + 전필 + 전선 포함)
         int totalCredits = course.getCoreCredits() +
                 course.getElectiveCredits() +
                 generalEducationCredits +
                 totalCoreAreaCredits;
 
-        boolean hasCompletedTotalCredits = totalCredits >= (REQUIRED_TOTAL_CREDITS + additionalMajorRequirement);
+        boolean hasCompletedTotalCredits = totalCredits >= REQUIRED_TOTAL_CREDITS;
 
-        // 최종 졸업 요건 충족 여부 판단
-        boolean isGraduatable =
-                hasCompletedTotalCredits &&
-                        hasCompletedGeneralEducation &&
-                        hasCompletedCoreArea &&
-                        hasCompletedMajorCourses;
+        if (!hasCompletedTotalCredits) {
+            response.put("총 학점 부족", String.format("현재 %d학점, 졸업에 필요한 학점: %d", totalCredits, REQUIRED_TOTAL_CREDITS));
+            isGraduatable = false;
+        }
 
-        return new Response<>("졸업 요건 충족 여부 확인 완료", isGraduatable);
+        response.put("isGraduatable", isGraduatable);
+        return new Response<>("졸업 요건 충족 여부 확인 완료", response);
     }
 
 

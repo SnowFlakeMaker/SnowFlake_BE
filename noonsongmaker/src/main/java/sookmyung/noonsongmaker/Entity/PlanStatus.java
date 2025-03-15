@@ -15,7 +15,7 @@ public class PlanStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planStatusId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
@@ -24,9 +24,17 @@ public class PlanStatus {
     private User user;
 
     @Column(nullable = false)
-    private boolean isActivated = true;
+    private boolean isActivated;
 
     @Builder.Default
     @Column(nullable = false)
     private int remainingSemesters = 16;
+
+    public void setActivated(boolean activated) {
+        this.isActivated = activated;
+    }
+
+    public void setRemainingSemesters(int remainingSemesters) {
+        this.remainingSemesters = remainingSemesters;
+    }
 }

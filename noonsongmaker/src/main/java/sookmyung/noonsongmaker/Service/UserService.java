@@ -4,10 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Entity.*;
-import sookmyung.noonsongmaker.Repository.EventRepository;
-import sookmyung.noonsongmaker.Repository.PlanRepository;
-import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
-import sookmyung.noonsongmaker.Repository.UserRepository;
+import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.event.RegularEventService;
 
 import java.util.List;
@@ -20,7 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final StatusInfoRepository statusInfoRepository;
     private final RegularEventService regularEventService;
-    private final PlanRepository planRepository;
+    private final PlanStatusRepository planStatusRepository;
 
 
     // 학기 변경
@@ -30,27 +27,31 @@ public class UserService {
         StatusInfo statusInfo = getUserStatus(user);
 
         // 현재 학기에 맞게 계획을 활성화/비활성화
-        List<Plan> userPlans = planRepository.findByUser(user);
+        List<PlanStatus> userPlanStatuses = planStatusRepository.findByUser(user);
 
-        for (Plan plan : userPlans) {
+        for (PlanStatus planStatus : userPlanStatuses) {
             boolean shouldActivate = false;
 
-            if (plan.getPeriod() == Period.ACADEMIC && newChapter.name().startsWith("SEM_")) {
-                shouldActivate = true; // 학기 중 계획 활성화
+            // 학기 중(SEM_) 활성화
+            if (planStatus.getPlan().getPeriod() == Period.ACADEMIC && newChapter.name().startsWith("SEM_")) {
+                shouldActivate = true;
             }
-            if (plan.getPeriod() == Period.VACATION && newChapter.name().startsWith("VAC_")) {
-                shouldActivate = true; // 방학 중 계획 활성화
-            }
-
-            plan.setActivated(shouldActivate);
-
-            if (plan.getRemainingSemesters() > 0) {
-                plan.setRemainingSemesters(plan.getRemainingSemesters() - 1);
+            // 방학 중(VAC_) 활성화
+            if (planStatus.getPlan().getPeriod() == Period.VACATION && newChapter.name().startsWith("VAC_")) {
+                shouldActivate = true;
             }
 
-            // 남은 학기가 0이면 비활성화
-            if (plan.getRemainingSemesters() == 0) {
-                plan.setActivated(false);
+            // 현재 학기에 맞게 활성화 여부 조정
+            planStatus.setActivated(shouldActivate);
+
+            // 남은 학기가 있으면 감소
+            if (planStatus.getRemainingSemesters() > 0) {
+                planStatus.setRemainingSemesters(planStatus.getRemainingSemesters() - 1);
+            }
+
+            // 남은 학기가 0이면 자동 비활성화
+            if (planStatus.getRemainingSemesters() == 0) {
+                planStatus.setActivated(false);
             }
         }
 

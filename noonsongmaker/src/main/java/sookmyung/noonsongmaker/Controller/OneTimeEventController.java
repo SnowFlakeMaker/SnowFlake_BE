@@ -11,6 +11,8 @@ import sookmyung.noonsongmaker.Service.UserProfileService;
 import sookmyung.noonsongmaker.Service.event.OneTimeEventService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/event")
 @RequiredArgsConstructor
@@ -37,8 +39,8 @@ public class OneTimeEventController {
 
     // 졸업인증제
     @GetMapping("/graduation")
-    public ResponseEntity<Response<Boolean>> checkGraduationEligibility(@CurrentUser User user) {
-        Response<Boolean> response = oneTimeEventService.checkGraduationEligibility(user.getId());
+    public ResponseEntity<Response<Map<String, Object>>> checkGraduationEligibility(@CurrentUser User user) {
+        Response<Map<String, Object>> response = oneTimeEventService.checkGraduationEligibility(user.getId());
         return ResponseEntity.ok(response);
     }
 }

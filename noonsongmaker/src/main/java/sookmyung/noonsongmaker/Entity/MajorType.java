@@ -8,5 +8,6 @@ public enum MajorType {
     @JsonValue
     public String toJson() {
         return this.name();
+    }
 }
 
