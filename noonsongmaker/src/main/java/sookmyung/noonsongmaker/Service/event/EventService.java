@@ -31,7 +31,6 @@ public class EventService {
 
         return events.stream()
                 .map(eventChapter -> eventChapter.getEvent().getName())
-                .filter(eventName -> !eventName.equals("동아리 지원") || !statusInfo.isClubMember()) // 동아리 지원 필터링
                 .collect(Collectors.toList());
     }
 

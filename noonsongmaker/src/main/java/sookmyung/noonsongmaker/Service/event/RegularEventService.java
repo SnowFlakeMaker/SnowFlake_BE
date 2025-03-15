@@ -13,6 +13,7 @@ import sookmyung.noonsongmaker.Service.plan.PlanService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -267,17 +268,28 @@ public class RegularEventService {
             return Response.buildResponse(null, "동아리 지원 불합격");
         }
 
-        // 동아리 가입 처리
-        statusInfo.joinClub();
+        Plan clubActivity = planRepository.findByUserAndPlanName(user, "동아리 활동")
+                .orElseThrow(() -> new IllegalArgumentException("동아리 활동 계획이 존재하지 않습니다."));
 
-/*        // 동아리 활동을 계획표에 추가
-        Plan clubActivity = Plan.builder()
-                .planName("동아리 활동")
-                .period(Period.ACADEMIC)
-                .user(user)
-                .build();
-        planRepository.save(clubActivity);*/
+        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(clubActivity);
 
+        if (existingPlanStatus.isPresent()) {
+            PlanStatus planStatus = existingPlanStatus.get();
+            if (!planStatus.isActivated()) {
+                planStatus.setActivated(true);
+                planStatus.setRemainingSemesters(16); // 끝까지 유지
+                planStatusRepository.save(planStatus);
+            }
+        } else {
+            PlanStatus newPlanStatus = PlanStatus.builder()
+                    .plan(clubActivity)
+                    .user(user)
+                    .isActivated(true)
+                    .remainingSemesters(16)
+                    .build();
+
+            planStatusRepository.save(newPlanStatus);
+        }
         // 동아리 지원 이벤트 삭제 (가입 후에는 다시 지원 불가능하도록)
         eventChaptersRepository.deleteByEventAndActivatedChapter(clubEvent, user.getCurrentChapter());
 
@@ -306,26 +318,28 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
         Plan majorClubPlan = planRepository.findByUserAndPlanName(user, "전공 학회 활동")
-                .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("전공 학회 활동")
-                            .period(Period.ACADEMIC)
-                            .user(user)
-                            .build();
-                    return planRepository.save(newPlan);
-                });*/
+                .orElseThrow(() -> new IllegalArgumentException("전공 학회 활동 계획이 존재하지 않습니다."));
 
-/*        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus majorClubPlanStatus = PlanStatus.builder()
-                .plan(majorClubPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4) // 1년(2학기) 동안 유지
-                .build();
+        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(majorClubPlan);
 
-        planStatusRepository.save(majorClubPlanStatus);*/
+        if (existingPlanStatus.isPresent()) {
+            PlanStatus planStatus = existingPlanStatus.get();
+            if (!planStatus.isActivated()) {
+                planStatus.setActivated(true);
+                planStatus.setRemainingSemesters(4);
+                planStatusRepository.save(planStatus);
+            }
+        } else {
+            PlanStatus newPlanStatus = PlanStatus.builder()
+                    .plan(majorClubPlan)
+                    .user(user)
+                    .isActivated(true)
+                    .remainingSemesters(4)
+                    .build();
+
+            planStatusRepository.save(newPlanStatus);
+        }
     }
 
     // 대외활동 지원
@@ -346,22 +360,28 @@ public class RegularEventService {
             throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
         }
 
-/*        // 계획표 추가
-        Plan externalActivityPlan = Plan.builder()
-                .planName("대외활동")
-                .period(Period.ACADEMIC) // 학기 중 활동
-                .user(user)
-                .build();
-        planRepository.save(externalActivityPlan);
+        Plan externalActivityPlan = planRepository.findByUserAndPlanName(user, "대외활동")
+                .orElseThrow(() -> new IllegalArgumentException("대외활동 계획이 존재하지 않습니다."));
 
-        // 계획 상태 추가 - 1년 유지
-        PlanStatus planStatus = PlanStatus.builder()
-                .plan(externalActivityPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4)
-                .build();
-        planStatusRepository.save(planStatus);*/
+        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(externalActivityPlan);
+
+        if (existingPlanStatus.isPresent()) {
+            PlanStatus planStatus = existingPlanStatus.get();
+            if (!planStatus.isActivated()) {
+                planStatus.setActivated(true);
+                planStatus.setRemainingSemesters(4);
+                planStatusRepository.save(planStatus);
+            }
+        } else {
+            PlanStatus newPlanStatus = PlanStatus.builder()
+                    .plan(externalActivityPlan)
+                    .user(user)
+                    .isActivated(true)
+                    .remainingSemesters(4)
+                    .build();
+
+            planStatusRepository.save(newPlanStatus);
+        }
     }
 
     @Transactional
@@ -386,26 +406,28 @@ public class RegularEventService {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
         Plan leadershipPlan = planRepository.findByUserAndPlanName(user, "리더십그룹 활동")
-                .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("리더십그룹 활동")
-                            .period(Period.ACADEMIC)
-                            .user(user)
-                            .build();
-                    return planRepository.save(newPlan);
-                });
+                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 활동 계획이 존재하지 않습니다."));
 
-        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus leadershipPlanStatus = PlanStatus.builder()
-                .plan(leadershipPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4)
-                .build();
+        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(leadershipPlan);
 
-        planStatusRepository.save(leadershipPlanStatus);*/
+        if (existingPlanStatus.isPresent()) {
+            PlanStatus planStatus = existingPlanStatus.get();
+            if (!planStatus.isActivated()) {
+                planStatus.setActivated(true);
+                planStatus.setRemainingSemesters(4);
+                planStatusRepository.save(planStatus);
+            }
+        } else {
+            PlanStatus newPlanStatus = PlanStatus.builder()
+                    .plan(leadershipPlan)
+                    .user(user)
+                    .isActivated(true)
+                    .remainingSemesters(4)
+                    .build();
+
+            planStatusRepository.save(newPlanStatus);
+        }
 
         return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
     }

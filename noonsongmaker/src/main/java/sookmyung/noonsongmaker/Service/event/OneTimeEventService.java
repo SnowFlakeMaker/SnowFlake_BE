@@ -10,6 +10,7 @@ import sookmyung.noonsongmaker.Repository.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -63,26 +64,30 @@ public class OneTimeEventService {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+        // Plan 찾기
         Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
-                .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("학생회 활동")
-                            .period(Period.ACADEMIC)
-                            .user(user)
-                            .build();
-                    return planRepository.save(newPlan);
-                });
+                .orElseThrow(() -> new IllegalArgumentException("학생회 활동 계획이 존재하지 않습니다."));
 
-        // lanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus studentCouncilPlanStatus = PlanStatus.builder()
-                .plan(studentCouncilPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4) // 1년(2학기) 동안 유지
-                .build();
+        // 기존 PlanStatus 찾기 (있으면 활성화, 없으면 새로 생성)
+        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(studentCouncilPlan);
 
-        planStatusRepository.save(studentCouncilPlanStatus);*/
+        if (existingPlanStatus.isPresent()) {
+            PlanStatus planStatus = existingPlanStatus.get();
+            if (!planStatus.isActivated()) {
+                planStatus.setActivated(true);
+                planStatus.setRemainingSemesters(4);
+                planStatusRepository.save(planStatus);
+            }
+        } else {
+            PlanStatus newPlanStatus = PlanStatus.builder()
+                    .plan(studentCouncilPlan)
+                    .user(user)
+                    .isActivated(true)
+                    .remainingSemesters(4)
+                    .build();
+
+            planStatusRepository.save(newPlanStatus);
+        }
         eventChaptersRepository.deleteByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
 
         return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
