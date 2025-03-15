@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e3aad5f3-fcb4-48b7-9e48-ca377e444103" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/OneTimeEventController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Dto/event/MajorInfoResponseDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Repository/CourseRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Service/UserProfileService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Service/event/OneTimeEventService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/IntroController.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/IntroController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/MainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/RegularEventController.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Controller/RegularEventController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Dto/main/PlayerInfoResponseDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Dto/main/PlayerInfoResponseDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Chapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Chapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/MajorType.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/MajorType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Plan.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Plan.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Schedule.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/Schedule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/StatusInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/StatusInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/UserProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Entity/UserProfile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Repository/StatusInfoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Repository/StatusInfoRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Service/event/RegularEventService.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Service/event/RegularEventService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Util/EventAvailabilityChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/noonsongmaker/src/main/java/sookmyung/noonsongmaker/Util/EventAvailabilityChecker.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/noonsongmaker">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="noonsongmaker" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feat/signup" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2tTZtozDZJmNjGDVlOlNMV7XdC6" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "HTTP Request.AuthTest | Email Varification.executor": "Run",
+    "HTTP Request.AuthTest | Login.executor": "Run",
+    "HTTP Request.AuthTest | Sign Up.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.NoonsongmakerApplication.executor": "Run",
+    "git-widget-placeholder": "feat/event",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "configurable.group.build",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="Spring Boot.NoonsongmakerApplication">
+    <configuration name="AuthTest | Email Varification" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/noonsongmaker/src/main/resources/http/AuthTest.http" executionIdentifier="Email Varification" index="3" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="AuthTest | Login" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/noonsongmaker/src/main/resources/http/AuthTest.http" executionIdentifier="Login" index="5" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="AuthTest | Sign Up" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/noonsongmaker/src/main/resources/http/AuthTest.http" executionIdentifier="Sign Up" index="4" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="noonsongmaker.main" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="noonsongmaker.main" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration name="NoonsongmakerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="noonsongmaker.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="sookmyung.noonsongmaker.NoonsongmakerApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="HTTP Request.AuthTest | Sign Up" />
+        <item itemvalue="HTTP Request.AuthTest | Login" />
+        <item itemvalue="HTTP Request.AuthTest | Email Varification" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.24978.46" />
+        <option value="bundled-js-predefined-d6986cc7102b-76f8388c3a79-JavaScript-IU-243.24978.46" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e3aad5f3-fcb4-48b7-9e48-ca377e444103" name="Changes" comment="" />
+      <created>1740378241769</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1740378241769</updated>
+      <workItem from="1740378242752" duration="21000" />
+      <workItem from="1740378265731" duration="35000" />
+      <workItem from="1740378310997" duration="3584000" />
+      <workItem from="1741525535602" duration="628000" />
+      <workItem from="1741673994599" duration="30000" />
+      <workItem from="1741674032617" duration="93000" />
+      <workItem from="1741674138812" duration="35000" />
+      <workItem from="1741674179284" duration="502000" />
+      <workItem from="1741674692249" duration="22308000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/noonsongmaker/build.gradle</url>
+          <line>7</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

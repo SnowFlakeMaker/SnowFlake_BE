@@ -25,6 +25,13 @@ public class UserProfile{
     @Column(nullable = false, length = 6)
     private String nickname;
 
+    @Column(nullable = false, length = 15)
+    private String major; // 추가
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MajorType majorType = MajorType.UNKNOWN;
+
     @Column(nullable = false)
     private String birthday;
 
@@ -38,10 +45,6 @@ public class UserProfile{
     @Column(nullable = false, length = 10)
     private String dream;
 
-    private String major;
-
-    @Enumerated(EnumType.STRING)
-    private MajorType majorType;
 
 }
 

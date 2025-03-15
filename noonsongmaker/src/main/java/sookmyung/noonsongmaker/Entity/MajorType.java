@@ -10,3 +10,4 @@ public enum MajorType {
         return this.name();
     }
 }
+
