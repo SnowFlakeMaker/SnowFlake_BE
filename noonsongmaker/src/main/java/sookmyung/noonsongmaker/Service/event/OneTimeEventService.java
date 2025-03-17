@@ -40,59 +40,50 @@ public class OneTimeEventService {
     @Transactional
     public Response<Object> applyForStudentCouncil(Long userId) {
         User user = getUser(userId);
-        StatusInfo statusInfo = getUserStatus(user);
 
-        // 1학년 1학기(SEM_S_1)에 지원 가능
-        if (!user.getCurrentChapter().equals(Chapter.SEM_S_1)) {
-            throw new IllegalArgumentException("학생회 지원은 1학년 1학기(SEM_S_1)에서만 가능합니다.");
+        EventChapters eventChapter = validateEventParticipation("학생회 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("학생회 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
-        Event studentCouncilEvent = eventRepository.findByName("학생회 지원")
-                .orElseThrow(() -> new IllegalArgumentException("학생회 지원 이벤트가 존재하지 않습니다."));
+        float selectionProbability = eventChapter.getEvent().getProbability() != null
+                ? eventChapter.getEvent().getProbability()
+                : 0.8f;
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 학생회 지원 이벤트가 없습니다.");
-        }
-
-        float selectionProbability = studentCouncilEvent.getProbability() != null ? studentCouncilEvent.getProbability() : 0.8f;
-
-        // 확률 계산
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
-        // Plan 찾기
         Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
                 .orElseThrow(() -> new IllegalArgumentException("학생회 활동 계획이 존재하지 않습니다."));
 
-        // 기존 PlanStatus 찾기 (있으면 활성화, 없으면 새로 생성)
-        Optional<PlanStatus> existingPlanStatus = planStatusRepository.findByPlan(studentCouncilPlan);
+        PlanStatus planStatus = planStatusRepository.findByPlan(studentCouncilPlan)
+                .orElseGet(() -> {
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(studentCouncilPlan)
+                            .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(4) // 1년(2학기) 동안 유지
+                            .build();
+                    return planStatusRepository.save(newPlanStatus);
+                });
 
-        if (existingPlanStatus.isPresent()) {
-            PlanStatus planStatus = existingPlanStatus.get();
-            if (!planStatus.isActivated()) {
-                planStatus.setActivated(true);
-                planStatus.setRemainingSemesters(4);
-                planStatusRepository.save(planStatus);
-            }
-        } else {
-            PlanStatus newPlanStatus = PlanStatus.builder()
-                    .plan(studentCouncilPlan)
-                    .user(user)
-                    .isActivated(true)
-                    .remainingSemesters(4)
-                    .build();
-
-            planStatusRepository.save(newPlanStatus);
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(4);
+            planStatusRepository.save(planStatus);
         }
-        eventChaptersRepository.deleteByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
+
+        // 학생회 지원 이벤트 비활성화 (단발성 이벤트)
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
 
         return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
     }
 
+    // 졸업인증제
     @Transactional
     public Response<Map<String, Object>> checkGraduationEligibility(Long userId) {
         User user = userRepository.findById(userId)
@@ -207,5 +198,20 @@ public class OneTimeEventService {
     private StatusInfo getUserStatus(User user) {
         return statusInfoRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+    }
+
+    public EventChapters validateEventParticipation(String eventName, User user) {
+        // 이벤트 존재 여부 확인
+        Event event = eventRepository.findByName(eventName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트입니다."));
+
+        // 현재 챕터에서 해당 이벤트가 활성화되었는지 확인
+        if (!event.getActivatedChapters().contains(user.getCurrentChapter())) {
+            throw new IllegalArgumentException("현재 학기에는 " + eventName + " 이벤트를 신청할 수 없습니다.");
+        }
+
+        // 유저의 이벤트 활성화 여부 확인
+        return eventChaptersRepository.findByEventAndUser(event, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }
 }

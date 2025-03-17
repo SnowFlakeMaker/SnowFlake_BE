@@ -2,19 +2,15 @@ package sookmyung.noonsongmaker.Service.intro;
 
 import org.springframework.data.util.Pair;
 import sookmyung.noonsongmaker.Dto.intro.UserProfileRequest;
-import sookmyung.noonsongmaker.Entity.Course;
-import sookmyung.noonsongmaker.Entity.StatusInfo;
-import sookmyung.noonsongmaker.Entity.User;
-import sookmyung.noonsongmaker.Entity.UserProfile;
-import sookmyung.noonsongmaker.Repository.CourseRepository;
-import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
-import sookmyung.noonsongmaker.Repository.UserProfileRepository;
+import sookmyung.noonsongmaker.Entity.*;
+import sookmyung.noonsongmaker.Repository.*;
 //import Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sookmyung.noonsongmaker.Repository.UserRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -26,6 +22,8 @@ public class IntroService {
     private final MBTIStatusService mbtiStatusService;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final EventRepository eventRepository;
+    private final EventChaptersRepository eventChaptersRepository;
 
     @Transactional
     public Pair<UserProfile, StatusInfo> createUserProfile(Long userId, UserProfileRequest request) {
@@ -71,6 +69,23 @@ public class IntroService {
         // MBTI에 따른 초기 스탯 설정
         StatusInfo statusInfo = mbtiStatusService.createInitialStatus(user, request.getMbti());
         statusInfoRepository.save(statusInfo);
+
+        // 모든 이벤트 가져오기
+        List<Event> allEvents = eventRepository.findAll();
+
+        // EventChapters 초기화
+        List<EventChapters> eventChaptersList = new ArrayList<>();
+        for (Event event : allEvents) {
+            EventChapters eventChapter = EventChapters.builder()
+                    .event(event)
+                    .user(user)
+                    .isActivated(true)  // 모든 이벤트 초기 활성화
+                    .build();
+            eventChaptersList.add(eventChapter);
+        }
+
+        eventChaptersRepository.saveAll(eventChaptersList);
+
 
         return Pair.of(userProfile, statusInfo);
     }

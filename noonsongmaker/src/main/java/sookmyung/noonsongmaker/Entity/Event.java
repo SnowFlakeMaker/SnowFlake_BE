@@ -3,6 +3,8 @@ package sookmyung.noonsongmaker.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -19,9 +21,11 @@ public class Event {
     @Column(name = "event_name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private Boolean isProbabilistic;
+    private Float probability = 1F;
 
-    private Float probability;
-
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "event_activated_chapters", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "activated_chapter")
+    private List<Chapter> activatedChapters;
 }

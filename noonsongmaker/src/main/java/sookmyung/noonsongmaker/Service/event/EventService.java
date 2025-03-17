@@ -34,7 +34,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    // 새로운 이벤트를 특정 챕터에 추가
+/*    // 새로운 이벤트를 특정 챕터에 추가
     @Transactional
     public void addEventToChapter(String eventName, Chapter chapter, boolean isProbabilistic, Float probability) {
         // 이벤트가 이미 존재하는지 확인
@@ -62,7 +62,7 @@ public class EventService {
                 .build();
 
         eventChaptersRepository.save(eventChapter);
-    }
+    }*/
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)

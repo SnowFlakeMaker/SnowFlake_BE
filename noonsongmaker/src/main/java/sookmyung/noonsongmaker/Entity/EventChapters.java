@@ -20,7 +20,11 @@ public class EventChapters {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "activated_chapter")
-    private Chapter activatedChapter;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Setter
+    @Column(nullable = false)
+    private Boolean isActivated;
 }
