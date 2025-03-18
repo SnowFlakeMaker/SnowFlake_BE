@@ -28,19 +28,18 @@ public class IntroService {
     private final CourseRepository courseRepository;
 
     @Transactional
-    public Pair<UserProfile, StatusInfo> createUserProfile(Long userId, UserProfileRequest request) {
+    public Pair<UserProfile, StatusInfo> createUserProfile(UserProfileRequest request) {
 
-        // 유저 존재 여부 확인
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        // 이메일로 유저 찾기
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
-
-        // 기존 프로필 존재 확인 확인
+        // 기존 프로필 존재 확인
         if (userProfileRepository.existsByUser(user)) {
             throw new IllegalArgumentException("이미 프로필이 존재합니다.");
         }
 
-        // 유저 프로필 생성 및 저장
+        // 유저 프로필 생성
         UserProfile userProfile = new UserProfile();
         userProfile.setUser(user);
         userProfile.setNickname(request.getNickname());
@@ -65,7 +64,6 @@ public class IntroService {
                 .core3((short) 0)
                 .core4((short) 0)
                 .build();
-
         courseRepository.save(course);
 
         // MBTI에 따른 초기 스탯 설정
