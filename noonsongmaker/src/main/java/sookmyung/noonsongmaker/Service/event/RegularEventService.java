@@ -179,8 +179,8 @@ public class RegularEventService {
         StatusInfo statusInfo = getUserStatus(user);
 
         // 현재 학기 일정 조회
-        List<Schedule> semesterSchedules = scheduleRepository.findByUserIdAndIsVacation(userId, false);
-        int studyCount = semesterSchedules.stream()
+        int studyCount = scheduleRepository.findByUser(user).stream()
+                .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .mapToInt(Schedule::getCount)
                 .sum();
 
@@ -198,11 +198,10 @@ public class RegularEventService {
         StatusInfo statusInfo = getUserStatus(user);
 
         // 방학 일정에서 "봉사" 활동 확인
-        List<Schedule> vacationSchedules = scheduleRepository.findByUserIdAndIsVacation(userId, true);
-
-        long serviceCount = vacationSchedules.stream()
+        long serviceCount = scheduleRepository.findByUser(user).stream()
+                .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .map(Schedule::getPlan)
-                .filter(plan -> plan.getPlanName() != null && plan.getPlanName().equals("봉사"))
+                .filter(plan -> "봉사".equals(plan.getPlanName())) // 봉사 계획만 필터링
                 .count();
 
         // 2칸 이상이면 성적 장학금 지급 가능
@@ -271,13 +270,13 @@ public class RegularEventService {
         // 동아리 가입 처리
         statusInfo.joinClub();
 
-        // 동아리 활동을 계획표에 추가
+/*        // 동아리 활동을 계획표에 추가
         Plan clubActivity = Plan.builder()
                 .planName("동아리 활동")
                 .period(Period.ACADEMIC)
                 .user(user)
                 .build();
-        planRepository.save(clubActivity);
+        planRepository.save(clubActivity);*/
 
         // 동아리 지원 이벤트 삭제 (가입 후에는 다시 지원 불가능하도록)
         eventChaptersRepository.deleteByEventAndActivatedChapter(clubEvent, user.getCurrentChapter());
@@ -307,7 +306,7 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
         Plan majorClubPlan = planRepository.findByUserAndPlanName(user, "전공 학회 활동")
                 .orElseGet(() -> {
                     Plan newPlan = Plan.builder()
@@ -316,9 +315,9 @@ public class RegularEventService {
                             .user(user)
                             .build();
                     return planRepository.save(newPlan);
-                });
+                });*/
 
-        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
+/*        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
         PlanStatus majorClubPlanStatus = PlanStatus.builder()
                 .plan(majorClubPlan)
                 .user(user)
@@ -326,7 +325,7 @@ public class RegularEventService {
                 .remainingSemesters(4) // 1년(2학기) 동안 유지
                 .build();
 
-        planStatusRepository.save(majorClubPlanStatus);
+        planStatusRepository.save(majorClubPlanStatus);*/
     }
 
     // 대외활동 지원
@@ -347,7 +346,7 @@ public class RegularEventService {
             throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
         }
 
-        // 계획표 추가
+/*        // 계획표 추가
         Plan externalActivityPlan = Plan.builder()
                 .planName("대외활동")
                 .period(Period.ACADEMIC) // 학기 중 활동
@@ -362,7 +361,7 @@ public class RegularEventService {
                 .isActivated(true)
                 .remainingSemesters(4)
                 .build();
-        planStatusRepository.save(planStatus);
+        planStatusRepository.save(planStatus);*/
     }
 
     @Transactional
@@ -387,7 +386,7 @@ public class RegularEventService {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
         Plan leadershipPlan = planRepository.findByUserAndPlanName(user, "리더십그룹 활동")
                 .orElseGet(() -> {
                     Plan newPlan = Plan.builder()
@@ -406,7 +405,7 @@ public class RegularEventService {
                 .remainingSemesters(4)
                 .build();
 
-        planStatusRepository.save(leadershipPlanStatus);
+        planStatusRepository.save(leadershipPlanStatus);*/
 
         return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
     }

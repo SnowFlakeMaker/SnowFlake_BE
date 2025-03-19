@@ -27,10 +27,9 @@ public class IntroController {
     // 회원 정보 작성(스탯 세팅)
     @PostMapping("/info-new")
     public ResponseEntity<Response<Map<String, UserProfileResponse>>> createUserProfile(
-            @CurrentUser User user,
             @RequestBody UserProfileRequest request) {
 
-        Pair<UserProfile, StatusInfo> result = userProfileService.createUserProfile(user.getId(), request);
+        Pair<UserProfile, StatusInfo> result = userProfileService.createUserProfile(request);
 
         StatusInfoResponse statusInfoResponse = new StatusInfoResponse(result.getSecond());
         UserProfileResponse responseDto = new UserProfileResponse(result.getFirst(), statusInfoResponse);

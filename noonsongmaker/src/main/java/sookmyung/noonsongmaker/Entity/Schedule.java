@@ -31,6 +31,9 @@ public class Schedule {
     @Column(nullable = false)
     private int count;
 
+    @Column(nullable = false)
+    private boolean isVacation;
+
     public Schedule(Plan plan, User user, Chapter currentChapter, int count) {
         this.plan = plan;
         this.user = user;

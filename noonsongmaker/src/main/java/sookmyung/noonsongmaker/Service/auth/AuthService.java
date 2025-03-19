@@ -33,13 +33,13 @@ public class AuthService {
     public void signUp(SignupRequestDto signupRequestDto) {
         String email = signupRequestDto.getEmail();
 
-        Boolean isVerified = redisTemplate.hasKey(EMAIL_PREFIX + email);
-        if (!isVerified) {
-            throw new IllegalArgumentException("이메일 인증이 필요합니다.");
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already in use");
+        Boolean isVerified = redisTemplate.hasKey(EMAIL_PREFIX + email);
+        if (!Boolean.TRUE.equals(isVerified)) {
+            throw new IllegalArgumentException("이메일 인증이 필요합니다.");
         }
 
         User user = User.builder()
@@ -54,20 +54,24 @@ public class AuthService {
 
     public String login(LoginRequestDto loginRequestDto, HttpServletResponse response) {
         String email = loginRequestDto.getEmail();
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, loginRequestDto.getPassword())
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, loginRequestDto.getPassword())
+            );
 
-        String accessToken = jwtProvider.generateAccessToken(email);
-        String refreshToken = jwtProvider.generateRefreshToken(email);
+            String accessToken = jwtProvider.generateAccessToken(email);
+            String refreshToken = jwtProvider.generateRefreshToken(email);
 
-        long expiration = jwtProvider.getExpiration(refreshToken);
-        refreshTokenService.saveRefreshToken(email, refreshToken, expiration);
+            long expiration = jwtProvider.getExpiration(refreshToken);
+            refreshTokenService.saveRefreshToken(email, refreshToken, expiration);
 
-        setCookie(response, "ACCESS_TOKEN", accessToken);
-        setCookie(response, "REFRESH_TOKEN", refreshToken);
+            setCookie(response, "ACCESS_TOKEN", accessToken);
+            setCookie(response, "REFRESH_TOKEN", refreshToken);
 
-        return email;
+            return email;
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
     }
 
     public String refreshAccessToken(String refreshToken, HttpServletResponse response) {

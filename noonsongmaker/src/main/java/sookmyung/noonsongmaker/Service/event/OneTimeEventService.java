@@ -63,7 +63,7 @@ public class OneTimeEventService {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
-        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
+/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
         Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
                 .orElseGet(() -> {
                     Plan newPlan = Plan.builder()
@@ -82,7 +82,7 @@ public class OneTimeEventService {
                 .remainingSemesters(4) // 1년(2학기) 동안 유지
                 .build();
 
-        planStatusRepository.save(studentCouncilPlanStatus);
+        planStatusRepository.save(studentCouncilPlanStatus);*/
         eventChaptersRepository.deleteByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
 
         return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
