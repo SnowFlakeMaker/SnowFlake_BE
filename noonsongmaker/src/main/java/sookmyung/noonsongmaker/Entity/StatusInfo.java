@@ -155,4 +155,13 @@ public class StatusInfo {
         this.leadership += amount;
     }
 
+    public void updateGeneralAssess(int amount) { this.generalAssess += amount; }
+
+    public void updateHobbyAssess(int amount) { this.hobbyAssess += amount; }
+
+    public void updateWorkAssess(int amount) { this.workAssess += amount; }
+
+    public void updateServiceAssess(int amount) { this.serviceAssess += amount; }
+
+    public void updateGlobalAssess(int amount) { this.globalAssess += amount; }
 }
