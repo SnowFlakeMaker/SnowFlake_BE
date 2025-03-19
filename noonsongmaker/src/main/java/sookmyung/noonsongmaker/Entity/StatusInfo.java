@@ -41,19 +41,19 @@ public class StatusInfo {
     private Integer generalAssess = 20;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer hobbyAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer workAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer serviceAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer globalAssess = 0;
 
     @Builder.Default
@@ -124,6 +124,9 @@ public class StatusInfo {
             throw new RuntimeException("존재하지 않는 스탯 필드: " + fieldName, e);
         }
     }
+
+    // TODO stress 제외, 값 업뎃 시 음수이면 0으로 설정하는 예외 처리 로직 구현
+
     public void updateIntelligence(int amount) {
         this.intelligence += amount;
     }
