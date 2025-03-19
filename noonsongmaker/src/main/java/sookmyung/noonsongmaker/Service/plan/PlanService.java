@@ -34,10 +34,55 @@ public class PlanService {
             response.add(result);
         }
 
+        applyAssessment(planCounts, status);
         statusInfoRepository.save(status);
         savePlanCounts(planCounts, user);
 
         return response;
+    }
+
+
+    private void applyAssessment(Map<Plan, Integer> planCounts, StatusInfo status) {
+        int totalCount = planCounts.values().stream().mapToInt(Integer::intValue).sum();
+
+        for (Map.Entry<Plan, Integer> entry : planCounts.entrySet()) {
+            String planName = entry.getKey().getPlanName();
+            int count = entry.getValue();
+            double ratio = (double) count / totalCount;
+
+            switch (planName) {
+                case "수업": case "공부":
+                    if (ratio >= 0.6) {
+                        status.updateGeneralAssess(status.getGeneralAssess() + 4);
+                    } else if (ratio <= 0.3) {
+                        status.updateGeneralAssess(status.getGeneralAssess() - 4);
+                    }
+                    break;
+                case "동아리":
+                    if (ratio >= 0.2) {
+                        status.updateHobbyAssess(status.getHobbyAssess() + 4);
+                    } else if (ratio <= 0.1) {
+                        status.updateHobbyAssess(status.getHobbyAssess() - 4);
+                    }
+                    break;
+                case "취미":
+                    if (ratio >= 0.3) {
+                        status.updateHobbyAssess(status.getHobbyAssess() + 4);
+                    }
+                    break;
+                case "알바":
+                    if (ratio >= 0.4) {
+                        status.updateWorkAssess(status.getWorkAssess() + 4);
+                    }
+                    break;
+                case "봉사":
+                    if (count >= 4) {
+                        status.updateServiceAssess(status.getServiceAssess() + 4);
+                    }
+                    break;
+                // TODO 외국어 평가 관련 재논의 필요
+            }
+        }
     }
 
     public void getSpecialPlan(User user) {
