@@ -65,8 +65,8 @@ public class AuthService {
             long expiration = jwtProvider.getExpiration(refreshToken);
             refreshTokenService.saveRefreshToken(email, refreshToken, expiration);
 
-            setCookie(response, "ACCESS_TOKEN", accessToken);
-            setCookie(response, "REFRESH_TOKEN", refreshToken);
+            setCookie(response, "ACCESS_TOKEN", accessToken, 60 * 60);
+            setCookie(response, "REFRESH_TOKEN", refreshToken, (int) expiration);
 
             return email;
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
@@ -82,14 +82,15 @@ public class AuthService {
             throw new IllegalArgumentException("만료되었거나 사용 불가능한 Refresh Token");
 
         String newAccessToken = jwtProvider.generateAccessToken(email);
-        setCookie(response, "ACCESS_TOKEN", newAccessToken);
+        setCookie(response, "ACCESS_TOKEN", newAccessToken, 60 * 60);
         return email;
     }
 
-    private void setCookie(HttpServletResponse response, String name, String value) {
+    private void setCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
+        cookie.setMaxAge(maxAgeSeconds);
         response.addCookie(cookie);
     }
 
