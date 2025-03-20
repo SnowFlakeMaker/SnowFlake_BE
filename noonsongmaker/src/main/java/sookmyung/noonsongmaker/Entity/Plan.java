@@ -1,15 +1,13 @@
 package sookmyung.noonsongmaker.Entity;
 
 import jakarta.persistence.*;
-
-import lombok.*;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "plans")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class Plan {
 
     @Id
@@ -23,5 +21,5 @@ public class Plan {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private Period period;
-
 }
+

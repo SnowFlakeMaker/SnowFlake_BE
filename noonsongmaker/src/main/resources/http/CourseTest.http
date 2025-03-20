@@ -6,3 +6,22 @@ GET https://examples.http-client.intellij.net/get
 GET http://localhost:8080/course/main
 Content-Type: application/json
 Cookie: ACCESS_TOKEN=
+
+### 수강해야 하는 교필 리스트업
+GET http://localhost:8080/course/required
+Content-Type: application/json
+Cookie:
+
+### 수강한 교핵 영역별 과목 수 리스트업
+GET http://localhost:8080/course/core
+Content-Type: application/json
+Cookie:
+
+### 시간표 제출
+PATCH http://localhost:8080/course/submit
+Content-Type: application/json
+Cookie:
+
+{
+  "디사의": true
+}
