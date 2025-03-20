@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sookmyung.noonsongmaker.Dto.Response;
+import sookmyung.noonsongmaker.Dto.intro.StatusInfoResponse;
 import sookmyung.noonsongmaker.Dto.main.ChapterResponseDto;
 import sookmyung.noonsongmaker.Dto.main.PlayerInfoResponseDto;
 import sookmyung.noonsongmaker.Entity.Chapter;
@@ -50,5 +51,14 @@ public class MainController {
 
         userService.changeSemester(user.getId(), newChapter);
         return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", null));
+    }
+
+    // 현재 스탯 조회
+    @GetMapping
+    public ResponseEntity<Response<StatusInfoResponse>> getStatus(@CurrentUser User user) {
+        StatusInfoResponse statusInfoResponse = mainInfoService.getStatusInfo(user.getId());
+        Response<StatusInfoResponse> response = Response.buildResponse(statusInfoResponse, "현재 스탯을 조회합니다.");
+
+        return ResponseEntity.ok(response);
     }
 }

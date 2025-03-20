@@ -2,10 +2,7 @@ package sookmyung.noonsongmaker.Service.intro;
 
 import org.springframework.data.util.Pair;
 import sookmyung.noonsongmaker.Dto.intro.UserProfileRequest;
-import sookmyung.noonsongmaker.Entity.Course;
-import sookmyung.noonsongmaker.Entity.StatusInfo;
-import sookmyung.noonsongmaker.Entity.User;
-import sookmyung.noonsongmaker.Entity.UserProfile;
+import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.CourseRepository;
 import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
 import sookmyung.noonsongmaker.Repository.UserProfileRepository;
@@ -33,6 +30,11 @@ public class IntroService {
         // 이메일로 유저 찾기
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        if (user.getCurrentChapter() == null) {
+            user.setCurrentChapter(Chapter.SEM_S_1);
+            userRepository.save(user); // 변경사항 저장
+        }
 
         // 기존 프로필 존재 확인
         if (userProfileRepository.existsByUser(user)) {
