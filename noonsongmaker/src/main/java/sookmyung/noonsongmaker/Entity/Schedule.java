@@ -26,6 +26,7 @@ public class Schedule {
     private User user;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Chapter currentChapter;
 
     @Column(nullable = false)
