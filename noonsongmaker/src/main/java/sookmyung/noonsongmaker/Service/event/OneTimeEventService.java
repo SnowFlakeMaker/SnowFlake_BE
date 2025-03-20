@@ -6,11 +6,14 @@ import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
+import sookmyung.noonsongmaker.Service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import static sookmyung.noonsongmaker.Entity.Chapter.getNextChapter;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class OneTimeEventService {
     private final CourseRepository courseRepository;
     private final UserProfileRepository userProfileRepository;
     private final PlanStatusRepository planStatusRepository;
+    private final UserService userService;
 
     // 학생회 지원 (단발성 이벤트)
     @Transactional
@@ -187,6 +191,107 @@ public class OneTimeEventService {
         return new Response<>("졸업 요건 충족 여부 확인 완료", response);
     }
 
+
+    // 교환학생 신청
+    @Transactional
+    public Response<String> applyForExchangeStudent(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+        Chapter currentChapter = user.getCurrentChapter();
+
+        // 5~7학기만 신청 가능
+        if (currentChapter.getSemester() < 5 || currentChapter.getSemester() > 7) {
+            throw new IllegalArgumentException("교환학생 신청은 3학년부터 4학년 1학기까지 가능합니다.");
+        }
+
+        // 이벤트 정보 조회
+        EventChapters eventChapter = validateEventParticipation("교환학생 신청", user);
+        Event event = eventChapter.getEvent();
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("교환학생 신청이 비활성화되어 있습니다.");
+        }
+
+        // 능력치 조건 확인
+        if (statusInfo.getForeignLang() < 80 ||
+                statusInfo.getIntelligence() < 70 ||
+                statusInfo.getGrit() < 70 ||
+                statusInfo.getSocial() < 70) {
+            throw new IllegalArgumentException("교환학생 신청 요건을 충족하지 못했습니다.");
+        }
+
+        // 신청 성공 여부 결정
+        float selectionProbability = event.getProbability() != null ? event.getProbability() : 0.8f;
+        boolean isSelected = Math.random() < selectionProbability;
+
+        if (!isSelected) {
+            return Response.buildResponse(null, "교환학생 신청 불합격");
+        }
+
+        Event proceedEvent = eventRepository.findByName("교환학생 진행")
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters proceedEventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 교환학생 진행 이벤트 활성화
+        proceedEventChapter.setIsActivated(true);
+        eventChaptersRepository.save(proceedEventChapter);
+
+        // 교환학생 신청 이벤트 비활성화
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        return Response.buildResponse(null, "교환학생 신청 합격. 다음 학기에 교환학생 진행 이벤트가 활성화됩니다.");
+    }
+
+    // 교환학생 진행
+    @Transactional
+    public Response<String> proceedExchangeStudent(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+
+        Course course = courseRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
+
+
+        // 교환학생 진행 이벤트 가져오기
+        Event proceedEvent = eventRepository.findByName("교환학생 진행")
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 이벤트 상태 조회
+        EventChapters eventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 이벤트가 비활성화된 경우 진행 불가
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("교환학생 진행이 비활성화되어 있습니다.");
+        }
+
+        // 코인 차감
+        if (statusInfo.getCoin() < 600) {
+            throw new IllegalArgumentException("코인이 부족하여 교환학생을 진행할 수 없습니다.");
+        }
+        statusInfo.modifyStat("coin", -600);
+
+        // 전공 9학점 인정 (ElectiveCredits 증가)
+        course.updateElectiveCredits(9);
+        courseRepository.save(course);
+
+        statusInfo.modifyStat("foreignLang", 10);
+        statusInfo.modifyStat("intelligence", 20);
+        statusInfo.modifyStat("grit", 20);
+        statusInfo.modifyStat("social", 10);
+        statusInfo.modifyStat("stress", -10);
+
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        // 자동으로 다음 학기로 변경
+        userService.changeSemester(userId);
+
+        return Response.buildResponse(null, "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+    }
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)

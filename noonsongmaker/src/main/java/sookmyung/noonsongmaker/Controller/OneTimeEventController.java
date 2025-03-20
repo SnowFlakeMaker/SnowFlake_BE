@@ -43,4 +43,18 @@ public class OneTimeEventController {
         Response<Map<String, Object>> response = oneTimeEventService.checkGraduationEligibility(user.getId());
         return ResponseEntity.ok(response);
     }
+
+    // 교환학생 신청
+    @PostMapping("exchange/apply")
+    public ResponseEntity<Response<String>> applyForExchangeStudent(@CurrentUser User user) {
+        Response<String> response = oneTimeEventService.applyForExchangeStudent(user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    // 교환학생 진행
+    @PostMapping("exchange/proceed")
+    public ResponseEntity<Response<String>> proceedExchangeStudent(@CurrentUser User user) {
+        Response<String> response = oneTimeEventService.proceedExchangeStudent(user.getId());
+        return ResponseEntity.ok(response);
+    }
 }

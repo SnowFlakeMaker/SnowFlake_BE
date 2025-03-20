@@ -166,16 +166,21 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 현재 학기 일정 조회
-        int studyCount = scheduleRepository.findByUser(user).stream()
+        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
+        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+
+        int studyCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
                 .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .mapToInt(Schedule::getCount)
                 .sum();
 
         // 공부/수업 기준 충족 여부 확인
         if (studyCount >= 15) {
-            statusInfo.setEligibleForMeritScholarship(true); // 다음 방학에서 봉사활동 체크 필요
+            statusInfo.setEligibleForMeritScholarship(true);
+        } else {
+            statusInfo.setEligibleForMeritScholarship(false);
         }
+
         statusInfoRepository.save(statusInfo);
     }
 
@@ -185,21 +190,22 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 방학 일정에서 "봉사" 활동 확인
-        long serviceCount = scheduleRepository.findByUser(user).stream()
+        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
+        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+
+        long serviceCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
                 .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .map(Schedule::getPlan)
-                .filter(plan -> "봉사".equals(plan.getPlanName())) // 봉사 계획만 필터링
+                .filter(plan -> "봉사".equals(plan.getPlanName()))
                 .count();
 
-        // 2칸 이상이면 성적 장학금 지급 가능
+        // 봉사 시간이 2칸 이상이어야 성적 장학금 지급 가능
         if (statusInfo.isEligibleForMeritScholarship() && serviceCount >= 2) {
-            statusInfo.setEligibleForMeritScholarship(true);  // 유지
+            statusInfo.setEligibleForMeritScholarship(true);
         } else {
             statusInfo.setEligibleForMeritScholarship(false); // 봉사 시간 부족 → 지급 불가
         }
 
-        // 변경 사항 저장
         statusInfoRepository.save(statusInfo);
     }
 
@@ -399,10 +405,6 @@ public class RegularEventService {
         return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
     }
 
-    public List<String> getAvailableEvents(Long userId) {
-        User user = getUser(userId);
-        return eventService.getAvailableEvents(userId, user.getCurrentChapter());
-    }
 
 
     // 유저 정보 조회 메소드들

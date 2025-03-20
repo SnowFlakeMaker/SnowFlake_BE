@@ -23,16 +23,6 @@ public class RegularEventController {
     private final RegularEventService regularEventService;
     private final UserProfileService userProfileService;
 
-    @GetMapping("/available")
-    public ResponseEntity<Response<Map<String, List<String>>>> getAvailableEvents(@CurrentUser User user) {
-        List<String> availableEvents = regularEventService.getAvailableEvents(user.getId());
-
-        Map<String, List<String>> response = new HashMap<>();
-        response.put("available_events", availableEvents);
-
-        return ResponseEntity.ok(Response.buildResponse(response, "현재 학기에서 활성화된 이벤트 목록"));
-    }
-
     // 개강총회
     @PostMapping("/orientation")
     public ResponseEntity<Response<Map<String, StatsResponseDto>>> attendOrientation(@CurrentUser User user) {

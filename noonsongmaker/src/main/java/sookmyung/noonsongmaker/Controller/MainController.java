@@ -49,10 +49,9 @@ public class MainController {
     // 학기 변경
     @PostMapping("/change-semester")
     public ResponseEntity<Response<Void>> changeSemester(
-            @CurrentUser User user,
-            @RequestParam Chapter newChapter) {
+            @CurrentUser User user) {
 
-        userService.changeSemester(user.getId(), newChapter);
+        userService.changeSemester(user.getId());
         return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", null));
     }
 
