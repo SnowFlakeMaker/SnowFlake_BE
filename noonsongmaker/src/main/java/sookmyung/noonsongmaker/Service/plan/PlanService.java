@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
-import sookmyung.noonsongmaker.Repository.EffectRepository;
-import sookmyung.noonsongmaker.Repository.PlanRepository;
-import sookmyung.noonsongmaker.Repository.ScheduleRepository;
-import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
+import sookmyung.noonsongmaker.Repository.*;
 
 import java.util.*;
 
@@ -17,6 +14,7 @@ import java.util.*;
 public class PlanService {
     private final StatusInfoRepository statusInfoRepository;
     private final PlanRepository planRepository;
+    private final PlanStatusRepository planStatusRepository;
     private final EffectRepository effectRepository;
     private final ScheduleRepository scheduleRepository;
 
@@ -85,8 +83,15 @@ public class PlanService {
         }
     }
 
-    public void getSpecialPlan(User user) {
-        // 
+    public List<String> getSpecialPlan(User user) {
+        List<PlanStatus> activatedPlans = planStatusRepository.findByUserAndIsActivatedTrue(user);
+        List<String> activatedPlanNames = new ArrayList<>();
+
+        for (PlanStatus task : activatedPlans) {
+            activatedPlanNames.add(task.getPlan().getPlanName());
+        }
+
+        return activatedPlanNames;
     }
 
     private PlanExecuteResponseDto applyPlanAndCollectResult(StatusInfo status, String taskName, Plan plan) {
