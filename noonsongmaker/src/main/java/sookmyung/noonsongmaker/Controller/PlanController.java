@@ -29,8 +29,9 @@ public class PlanController {
     }
 
     @GetMapping("/specialist")
-    public ResponseEntity<Response<String>> getSpecialist(@CurrentUser User user) {
-
-        return ResponseEntity.ok(Response.buildResponse(null, "이번 학기 추가 가능한 특별 계획"));
+    public ResponseEntity<Response<List<String>>> getSpecialist(@CurrentUser User user) {
+        List<String> response = planService.getSpecialPlan(user);
+        
+        return ResponseEntity.ok(Response.buildResponse(response, "이번 학기 추가 가능한 특별 계획"));
     }
 }
