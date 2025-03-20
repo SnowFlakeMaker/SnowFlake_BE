@@ -251,10 +251,10 @@ public class RegularEventService {
             return Response.buildResponse(null, "동아리 지원 불합격");
         }
 
-        Plan clubActivity = planRepository.findByUserAndPlanName(user, "동아리 활동")
+        Plan clubActivity = planRepository.findByPlanName("동아리 활동")
                 .orElseThrow(() -> new IllegalArgumentException("동아리 활동 계획이 존재하지 않습니다."));
 
-        PlanStatus planStatus = planStatusRepository.findByPlan(clubActivity)
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(clubActivity, user)
                 .orElseGet(() -> {
                     PlanStatus newPlanStatus = PlanStatus.builder()
                             .plan(clubActivity)
@@ -298,10 +298,10 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-        Plan majorClubPlan = planRepository.findByUserAndPlanName(user, "전공 학회 활동")
+        Plan majorClubPlan = planRepository.findByPlanName("전공 학회 활동")
                 .orElseThrow(() -> new IllegalArgumentException("전공 학회 활동 계획이 존재하지 않습니다."));
 
-        PlanStatus planStatus = planStatusRepository.findByPlan(majorClubPlan)
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(majorClubPlan, user)
                 .orElseGet(() -> {
                     PlanStatus newPlanStatus = PlanStatus.builder()
                             .plan(majorClubPlan)
@@ -335,10 +335,10 @@ public class RegularEventService {
             throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
         }
 
-        Plan externalActivityPlan = planRepository.findByUserAndPlanName(user, "대외활동")
+        Plan externalActivityPlan = planRepository.findByPlanName("대외활동")
                 .orElseThrow(() -> new IllegalArgumentException("대외활동 계획이 존재하지 않습니다."));
 
-        PlanStatus planStatus = planStatusRepository.findByPlan(externalActivityPlan)
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(externalActivityPlan, user)
                 .orElseGet(() -> {
                     PlanStatus newPlanStatus = PlanStatus.builder()
                             .plan(externalActivityPlan)
@@ -376,10 +376,10 @@ public class RegularEventService {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-        Plan leadershipPlan = planRepository.findByUserAndPlanName(user, "리더십그룹 활동")
+        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹 활동")
                 .orElseThrow(() -> new IllegalArgumentException("리더십그룹 활동 계획이 존재하지 않습니다."));
 
-        PlanStatus planStatus = planStatusRepository.findByPlan(leadershipPlan)
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(leadershipPlan, user)
                 .orElseGet(() -> {
                     PlanStatus newPlanStatus = PlanStatus.builder()
                             .plan(leadershipPlan)

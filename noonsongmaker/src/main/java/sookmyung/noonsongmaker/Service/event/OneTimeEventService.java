@@ -34,8 +34,6 @@ public class OneTimeEventService {
     private final UserProfileRepository userProfileRepository;
     private final PlanStatusRepository planStatusRepository;
 
-    private static final double STUDENT_COUNCIL_SELECTION_PROBABILITY = 0.8;
-
     // 학생회 지원 (단발성 이벤트)
     @Transactional
     public Response<Object> applyForStudentCouncil(Long userId) {
@@ -56,10 +54,10 @@ public class OneTimeEventService {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
-        Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
+        Plan studentCouncilPlan = planRepository.findByPlanName("학생회 활동")
                 .orElseThrow(() -> new IllegalArgumentException("학생회 활동 계획이 존재하지 않습니다."));
 
-        PlanStatus planStatus = planStatusRepository.findByPlan(studentCouncilPlan)
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(studentCouncilPlan, user)
                 .orElseGet(() -> {
                     PlanStatus newPlanStatus = PlanStatus.builder()
                             .plan(studentCouncilPlan)
