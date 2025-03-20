@@ -115,6 +115,7 @@ public class PlanService {
             case SOCIAL -> status.updateSocial(effect.getChangeAmount());
             case STRESS -> status.updateStress(effect.getChangeAmount());
             case LEADERSHIP -> status.updateLeadership(effect.getChangeAmount());
+            case COIN -> status.updateCoin(effect.getChangeAmount());
         }
     }
 
