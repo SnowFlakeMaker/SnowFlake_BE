@@ -4,15 +4,24 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 import io.jsonwebtoken.*;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtProvider {
-    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+    private SecretKey secretKey;
     private final long ACCESS_TOKEN_VALIDITY = 1000 * 60 * 60; // 추후 시간 단축!
     private final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 * 24 * 7; // 7일
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public String generateAccessToken(String email) {
         return Jwts.builder()
