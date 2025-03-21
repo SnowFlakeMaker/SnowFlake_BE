@@ -1,0 +1,21 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### 회원 정보 작성
+POST http://localhost:8080/intro/info-new
+Content-Type: application/json
+Cookie:
+
+{"email": "",
+  "nickname": "테스트유저",
+  "birthday": "1990-01-01",
+  "major" : "컴퓨터과학전공",
+  "mbti": "ESTP",
+  "hobby": "독서",
+  "dream": "의사"}
+
+### 플레이어 초기 셋팅
+GET http://localhost:8080/intro/entrance
+Content-Type: application/json
+Cookie:

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"event_id", "chapter"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"event_id", "activated_chapter"})})
 public class EventChapters {
 
     @Id

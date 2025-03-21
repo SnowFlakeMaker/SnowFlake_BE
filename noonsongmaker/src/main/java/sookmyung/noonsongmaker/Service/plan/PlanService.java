@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
-import sookmyung.noonsongmaker.Repository.EffectRepository;
-import sookmyung.noonsongmaker.Repository.PlanRepository;
-import sookmyung.noonsongmaker.Repository.ScheduleRepository;
-import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
+import sookmyung.noonsongmaker.Repository.*;
 
 import java.util.*;
 
@@ -17,6 +14,7 @@ import java.util.*;
 public class PlanService {
     private final StatusInfoRepository statusInfoRepository;
     private final PlanRepository planRepository;
+    private final PlanStatusRepository planStatusRepository;
     private final EffectRepository effectRepository;
     private final ScheduleRepository scheduleRepository;
 
@@ -34,14 +32,66 @@ public class PlanService {
             response.add(result);
         }
 
+        applyAssessment(planCounts, status);
         statusInfoRepository.save(status);
         savePlanCounts(planCounts, user);
 
         return response;
     }
 
-    public void getSpecialPlan(User user) {
-        // 
+
+    private void applyAssessment(Map<Plan, Integer> planCounts, StatusInfo status) {
+        int totalCount = planCounts.values().stream().mapToInt(Integer::intValue).sum();
+
+        for (Map.Entry<Plan, Integer> entry : planCounts.entrySet()) {
+            String planName = entry.getKey().getPlanName();
+            int count = entry.getValue();
+            double ratio = (double) count / totalCount;
+
+            switch (planName) {
+                case "수업": case "공부":
+                    if (ratio >= 0.6) {
+                        status.updateGeneralAssess(status.getGeneralAssess() + 4);
+                    } else if (ratio <= 0.3) {
+                        status.updateGeneralAssess(status.getGeneralAssess() - 4);
+                    }
+                    break;
+                case "동아리":
+                    if (ratio >= 0.2) {
+                        status.updateHobbyAssess(status.getHobbyAssess() + 4);
+                    } else if (ratio <= 0.1) {
+                        status.updateHobbyAssess(status.getHobbyAssess() - 4);
+                    }
+                    break;
+                case "취미":
+                    if (ratio >= 0.3) {
+                        status.updateHobbyAssess(status.getHobbyAssess() + 4);
+                    }
+                    break;
+                case "알바":
+                    if (ratio >= 0.4) {
+                        status.updateWorkAssess(status.getWorkAssess() + 4);
+                    }
+                    break;
+                case "봉사":
+                    if (count >= 4) {
+                        status.updateServiceAssess(status.getServiceAssess() + 4);
+                    }
+                    break;
+                // TODO 외국어 평가 관련 재논의 필요
+            }
+        }
+    }
+
+    public List<String> getSpecialPlan(User user) {
+        List<PlanStatus> activatedPlans = planStatusRepository.findByUserAndIsActivatedTrue(user);
+        List<String> activatedPlanNames = new ArrayList<>();
+
+        for (PlanStatus task : activatedPlans) {
+            activatedPlanNames.add(task.getPlan().getPlanName());
+        }
+
+        return activatedPlanNames;
     }
 
     private PlanExecuteResponseDto applyPlanAndCollectResult(StatusInfo status, String taskName, Plan plan) {
@@ -65,6 +115,7 @@ public class PlanService {
             case SOCIAL -> status.updateSocial(effect.getChangeAmount());
             case STRESS -> status.updateStress(effect.getChangeAmount());
             case LEADERSHIP -> status.updateLeadership(effect.getChangeAmount());
+            case COIN -> status.updateCoin(effect.getChangeAmount());
         }
     }
 

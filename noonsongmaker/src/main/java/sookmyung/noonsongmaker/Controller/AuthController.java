@@ -51,7 +51,11 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Response<Map<String, String>>> refreshToken(@CookieValue("REFRESH_TOKEN") String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<Response<Map<String, String>>> refreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken, HttpServletResponse response) {
+        if (refreshToken == null) {
+            throw new IllegalArgumentException("쿠키에 Refresh Token이 없습니다.");
+        }
+
         String email = authService.refreshAccessToken(refreshToken, response);
 
         Map<String, String> responseData = new HashMap<>();

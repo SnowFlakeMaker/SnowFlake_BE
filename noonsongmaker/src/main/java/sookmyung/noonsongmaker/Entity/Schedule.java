@@ -26,10 +26,14 @@ public class Schedule {
     private User user;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Chapter currentChapter;
 
     @Column(nullable = false)
     private int count;
+
+    @Column(nullable = false)
+    private boolean isVacation;
 
     public Schedule(Plan plan, User user, Chapter currentChapter, int count) {
         this.plan = plan;

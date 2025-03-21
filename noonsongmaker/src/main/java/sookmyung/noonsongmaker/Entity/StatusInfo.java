@@ -41,19 +41,19 @@ public class StatusInfo {
     private Integer generalAssess = 20;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer hobbyAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer workAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer serviceAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("20")
+    @ColumnDefault("0")
     private Integer globalAssess = 0;
 
     @Builder.Default
@@ -118,32 +118,36 @@ public class StatusInfo {
             throw new RuntimeException("존재하지 않는 스탯 필드: " + fieldName, e);
         }
     }
-    public void updateIntelligence(int amount) {
-        this.intelligence += amount;
+
+    // TODO stress 제외, 값 업뎃 시 음수이면 0으로 설정하는 예외 처리 로직 구현
+
+    private Integer changeValueWithinBound(Integer status, int amount) {
+        return Math.max(0, Math.min(150, status + amount));
     }
 
-    public void updateForeignLang(int amount) {
-        this.foreignLang += amount;
-    }
+    public void updateIntelligence(int amount) { this.intelligence = changeValueWithinBound(this.intelligence, amount); }
 
-    public void updateGrit(int amount) {
-        this.grit += amount;
-    }
+    public void updateForeignLang(int amount) { this.foreignLang = changeValueWithinBound(this.foreignLang, amount); }
 
-    public void updateStrength(int amount) {
-        this.strength += amount;
-    }
+    public void updateGrit(int amount) { this.grit = changeValueWithinBound(this.grit, amount); }
 
-    public void updateSocial(int amount) {
-        this.social += amount;
-    }
+    public void updateStrength(int amount) { this.strength = changeValueWithinBound(this.strength, amount); }
 
-    public void updateStress(int amount) {
-        this.stress += amount;
-    }
+    public void updateSocial(int amount) { this.social = changeValueWithinBound(this.social, amount); }
 
-    public void updateLeadership(int amount) {
-        this.leadership += amount;
-    }
+    public void updateStress(int amount) { this.stress = changeValueWithinBound(this.stress, amount); }
 
+    public void updateLeadership(int amount) { this.leadership = changeValueWithinBound(this.leadership, amount); }
+
+    public void updateGeneralAssess(int amount) { this.generalAssess = changeValueWithinBound(this.generalAssess, amount); }
+
+    public void updateHobbyAssess(int amount) { this.hobbyAssess = changeValueWithinBound(this.hobbyAssess, amount); }
+
+    public void updateWorkAssess(int amount) { this.workAssess = changeValueWithinBound(this.workAssess, amount); }
+
+    public void updateServiceAssess(int amount) { this.serviceAssess = changeValueWithinBound(this.serviceAssess, amount); }
+
+    public void updateGlobalAssess(int amount) { this.globalAssess = changeValueWithinBound(this.globalAssess, amount); }
+
+    public void updateCoin(int amount) { this.coin = Math.min(0, this.coin + amount); }
 }
