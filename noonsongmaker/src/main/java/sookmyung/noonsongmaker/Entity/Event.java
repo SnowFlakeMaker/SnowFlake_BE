@@ -23,6 +23,8 @@ public class Event {
 
     private Float probability = 1F;
 
+    private boolean isRegular = false;
+
     @ElementCollection
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "event_activated_chapters", joinColumns = @JoinColumn(name = "event_id"))
