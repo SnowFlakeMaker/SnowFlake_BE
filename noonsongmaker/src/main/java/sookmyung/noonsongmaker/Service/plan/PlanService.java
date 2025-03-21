@@ -6,6 +6,7 @@ import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
+import sookmyung.noonsongmaker.Service.sse.SseService;
 
 import java.util.*;
 
@@ -17,8 +18,11 @@ public class PlanService {
     private final PlanStatusRepository planStatusRepository;
     private final EffectRepository effectRepository;
     private final ScheduleRepository scheduleRepository;
+    private final SseService sseService;
 
     public List<PlanExecuteResponseDto> executePlan(List<PlanExecuteRequestDto> requestDto, User user) {
+        sseService.sendOneTimeEventList(user);
+
         List<PlanExecuteResponseDto> response = new ArrayList<>();
         StatusInfo status = statusInfoRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalArgumentException("Status info not found"));

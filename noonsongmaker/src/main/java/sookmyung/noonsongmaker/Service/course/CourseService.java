@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserProfileRepository userProfileRepository;
-    private final SseService sseService;
 
     public CreditResponseDto getCurrentCreditStatus(User user) {
         Course courseResult = courseRepository.findByUser(user)
@@ -122,7 +121,6 @@ public class CourseService {
             results.put("core4", updated);
         }
 
-        sseService.sendOneTimeEventList(user);
 
         return TimetableSubmitResponseDto.builder()
                 .updateResults(results)
