@@ -4,6 +4,7 @@ import sookmyung.noonsongmaker.Entity.Chapter;
 
 import java.util.Random;
 
+// TODO 플로우에 따라 case 문 내 학기 업데이트
 public class TimetableUpdatePolicy {
     private final Chapter chapter;
     private final Random random = new Random();
