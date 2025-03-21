@@ -32,6 +32,11 @@ public class IntroService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
+        if (user.getCurrentChapter() == null) {
+            user.setCurrentChapter(Chapter.SEM_S_1);
+            userRepository.save(user); // 변경사항 저장
+        }
+
         // 기존 프로필 존재 확인
         if (userProfileRepository.existsByUser(user)) {
             throw new IllegalArgumentException("이미 프로필이 존재합니다.");
