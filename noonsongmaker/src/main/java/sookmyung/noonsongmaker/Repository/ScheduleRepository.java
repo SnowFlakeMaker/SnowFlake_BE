@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findByUser(User user);
+    List<Schedule> findByUserAndCurrentChapter(User user, Chapter currentChapter);
 
 }
 
