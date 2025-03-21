@@ -29,4 +29,14 @@ public enum Chapter {
         return this.name();
 
     }
+
+    public static Chapter getNextChapter(Chapter currentChapter) {
+        Chapter[] chapters = Chapter.values();
+        for (int i = 0; i < chapters.length - 1; i++) {
+            if (chapters[i] == currentChapter) {
+                return chapters[i + 1];
+            }
+        }
+        return null;  // 마지막 챕터(VAC_W_4) 이후는 없음
+    }
 }

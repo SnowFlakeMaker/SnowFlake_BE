@@ -6,10 +6,14 @@ import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
+import sookmyung.noonsongmaker.Service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static sookmyung.noonsongmaker.Entity.Chapter.getNextChapter;
 
 @Service
 @RequiredArgsConstructor
@@ -32,62 +36,56 @@ public class OneTimeEventService {
     private final CourseRepository courseRepository;
     private final UserProfileRepository userProfileRepository;
     private final PlanStatusRepository planStatusRepository;
-
-    private static final double STUDENT_COUNCIL_SELECTION_PROBABILITY = 0.8;
+    private final UserService userService;
 
     // 학생회 지원 (단발성 이벤트)
     @Transactional
     public Response<Object> applyForStudentCouncil(Long userId) {
         User user = getUser(userId);
-        StatusInfo statusInfo = getUserStatus(user);
 
-        // 1학년 1학기(SEM_S_1)에 지원 가능
-        if (!user.getCurrentChapter().equals(Chapter.SEM_S_1)) {
-            throw new IllegalArgumentException("학생회 지원은 1학년 1학기(SEM_S_1)에서만 가능합니다.");
+        EventChapters eventChapter = validateEventParticipation("학생회 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("학생회 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
-        Event studentCouncilEvent = eventRepository.findByName("학생회 지원")
-                .orElseThrow(() -> new IllegalArgumentException("학생회 지원 이벤트가 존재하지 않습니다."));
+        float selectionProbability = eventChapter.getEvent().getProbability() != null
+                ? eventChapter.getEvent().getProbability()
+                : 0.8f;
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 학생회 지원 이벤트가 없습니다.");
-        }
-
-        float selectionProbability = studentCouncilEvent.getProbability() != null ? studentCouncilEvent.getProbability() : 0.8f;
-
-        // 확률 계산
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
             return Response.buildResponse(null, "학생회 지원 불합격");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
-        Plan studentCouncilPlan = planRepository.findByUserAndPlanName(user, "학생회 활동")
+        Plan studentCouncilPlan = planRepository.findByPlanName("학생회 활동")
+                .orElseThrow(() -> new IllegalArgumentException("학생회 활동 계획이 존재하지 않습니다."));
+
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(studentCouncilPlan, user)
                 .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("학생회 활동")
-                            .period(Period.ACADEMIC)
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(studentCouncilPlan)
                             .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(4) // 1년(2학기) 동안 유지
                             .build();
-                    return planRepository.save(newPlan);
+                    return planStatusRepository.save(newPlanStatus);
                 });
 
-        // lanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus studentCouncilPlanStatus = PlanStatus.builder()
-                .plan(studentCouncilPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4) // 1년(2학기) 동안 유지
-                .build();
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(4);
+            planStatusRepository.save(planStatus);
+        }
 
-        planStatusRepository.save(studentCouncilPlanStatus);*/
-        eventChaptersRepository.deleteByEventAndActivatedChapter(studentCouncilEvent, user.getCurrentChapter());
+        // 학생회 지원 이벤트 비활성화 (단발성 이벤트)
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
 
         return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
     }
 
+    // 졸업인증제
     @Transactional
     public Response<Map<String, Object>> checkGraduationEligibility(Long userId) {
         User user = userRepository.findById(userId)
@@ -194,6 +192,107 @@ public class OneTimeEventService {
     }
 
 
+    // 교환학생 신청
+    @Transactional
+    public Response<String> applyForExchangeStudent(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+        Chapter currentChapter = user.getCurrentChapter();
+
+        // 5~7학기만 신청 가능
+        if (currentChapter.getSemester() < 5 || currentChapter.getSemester() > 7) {
+            throw new IllegalArgumentException("교환학생 신청은 3학년부터 4학년 1학기까지 가능합니다.");
+        }
+
+        // 이벤트 정보 조회
+        EventChapters eventChapter = validateEventParticipation("교환학생 신청", user);
+        Event event = eventChapter.getEvent();
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("교환학생 신청이 비활성화되어 있습니다.");
+        }
+
+        // 능력치 조건 확인
+        if (statusInfo.getForeignLang() < 80 ||
+                statusInfo.getIntelligence() < 70 ||
+                statusInfo.getGrit() < 70 ||
+                statusInfo.getSocial() < 70) {
+            throw new IllegalArgumentException("교환학생 신청 요건을 충족하지 못했습니다.");
+        }
+
+        // 신청 성공 여부 결정
+        float selectionProbability = event.getProbability() != null ? event.getProbability() : 0.8f;
+        boolean isSelected = Math.random() < selectionProbability;
+
+        if (!isSelected) {
+            return Response.buildResponse(null, "교환학생 신청 불합격");
+        }
+
+        Event proceedEvent = eventRepository.findByName("교환학생 진행")
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters proceedEventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 교환학생 진행 이벤트 활성화
+        proceedEventChapter.setIsActivated(true);
+        eventChaptersRepository.save(proceedEventChapter);
+
+        // 교환학생 신청 이벤트 비활성화
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        return Response.buildResponse(null, "교환학생 신청 합격. 다음 학기에 교환학생 진행 이벤트가 활성화됩니다.");
+    }
+
+    // 교환학생 진행
+    @Transactional
+    public Response<String> proceedExchangeStudent(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+
+        Course course = courseRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
+
+
+        // 교환학생 진행 이벤트 가져오기
+        Event proceedEvent = eventRepository.findByName("교환학생 진행")
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 이벤트 상태 조회
+        EventChapters eventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
+
+        // 이벤트가 비활성화된 경우 진행 불가
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("교환학생 진행이 비활성화되어 있습니다.");
+        }
+
+        // 코인 차감
+        if (statusInfo.getCoin() < 600) {
+            throw new IllegalArgumentException("코인이 부족하여 교환학생을 진행할 수 없습니다.");
+        }
+        statusInfo.modifyStat("coin", -600);
+
+        // 전공 9학점 인정 (ElectiveCredits 증가)
+        course.updateElectiveCredits(9);
+        courseRepository.save(course);
+
+        statusInfo.modifyStat("foreignLang", 10);
+        statusInfo.modifyStat("intelligence", 20);
+        statusInfo.modifyStat("grit", 20);
+        statusInfo.modifyStat("social", 10);
+        statusInfo.modifyStat("stress", -10);
+
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        // 자동으로 다음 학기로 변경
+        userService.changeSemester(userId);
+
+        return Response.buildResponse(null, "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+    }
+
     private User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
@@ -202,5 +301,20 @@ public class OneTimeEventService {
     private StatusInfo getUserStatus(User user) {
         return statusInfoRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+    }
+
+    public EventChapters validateEventParticipation(String eventName, User user) {
+        // 이벤트 존재 여부 확인
+        Event event = eventRepository.findByName(eventName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트입니다."));
+
+        // 현재 챕터에서 해당 이벤트가 활성화되었는지 확인
+        if (!event.getActivatedChapters().contains(user.getCurrentChapter())) {
+            throw new IllegalArgumentException("현재 학기에는 " + eventName + " 이벤트를 신청할 수 없습니다.");
+        }
+
+        // 유저의 이벤트 활성화 여부 확인
+        return eventChaptersRepository.findByEventAndUser(event, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }
 }

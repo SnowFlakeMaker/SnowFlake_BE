@@ -13,6 +13,7 @@ import sookmyung.noonsongmaker.Service.plan.PlanService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,30 +34,24 @@ public class RegularEventService {
     // 개강총회
     @Transactional
     public StatsResponseDto processOrientation(Long userId) {
-
         User user = getUser(userId);
         UserProfile userProfile = getUserProfile(user);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 활성화 여부 확인
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(
-                eventRepository.findByName("개강총회").orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트입니다.")),
-                user.getCurrentChapter()
-        );
+        EventChapters eventChapter = validateEventParticipation("개강총회", user);
 
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 개강총회 이벤트가 없습니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("개강총회가 비활성화되어 진행할 수 없습니다.");
         }
 
-        statusInfo.modifyStat("social", 5);  // 사회성 증가
+        statusInfo.modifyStat("social", 5);
         if (userProfile.getMbti().name().startsWith("I")) {
-            statusInfo.modifyStat("stress", 5);  // 내향형이면 스트레스 증가
+            statusInfo.modifyStat("stress", 5);
         }
-
         statusInfoRepository.save(statusInfo);
+
         return new StatsResponseDto(statusInfo);
     }
-
 
     // MT
     @Transactional
@@ -65,14 +60,10 @@ public class RegularEventService {
         UserProfile userProfile = getUserProfile(user);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 활성화 여부 확인
-        Event mtEvent = eventRepository.findByName("MT")
-                .orElseThrow(() -> new IllegalArgumentException("MT 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("MT", user);
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(mtEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 MT 이벤트가 없습니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("MT가 비활성화되어 진행할 수 없습니다.");
         }
 
         statusInfo.modifyStat("social", 5);
@@ -90,13 +81,10 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        Event festivalEvent = eventRepository.findByName("축제")
-                .orElseThrow(() -> new IllegalArgumentException("축제 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("축제", user);
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(festivalEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 축제 이벤트가 없습니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("축제가 비활성화되어 진행할 수 없습니다.");
         }
 
         if (statusInfo.getCoin() < 5) {
@@ -178,16 +166,21 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 현재 학기 일정 조회
-        int studyCount = scheduleRepository.findByUser(user).stream()
+        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
+        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+
+        int studyCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
                 .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .mapToInt(Schedule::getCount)
                 .sum();
 
         // 공부/수업 기준 충족 여부 확인
         if (studyCount >= 15) {
-            statusInfo.setEligibleForMeritScholarship(true); // 다음 방학에서 봉사활동 체크 필요
+            statusInfo.setEligibleForMeritScholarship(true);
+        } else {
+            statusInfo.setEligibleForMeritScholarship(false);
         }
+
         statusInfoRepository.save(statusInfo);
     }
 
@@ -197,21 +190,22 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 방학 일정에서 "봉사" 활동 확인
-        long serviceCount = scheduleRepository.findByUser(user).stream()
+        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
+        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+
+        long serviceCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
                 .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
                 .map(Schedule::getPlan)
-                .filter(plan -> "봉사".equals(plan.getPlanName())) // 봉사 계획만 필터링
+                .filter(plan -> "봉사".equals(plan.getPlanName()))
                 .count();
 
-        // 2칸 이상이면 성적 장학금 지급 가능
+        // 봉사 시간이 2칸 이상이어야 성적 장학금 지급 가능
         if (statusInfo.isEligibleForMeritScholarship() && serviceCount >= 2) {
-            statusInfo.setEligibleForMeritScholarship(true);  // 유지
+            statusInfo.setEligibleForMeritScholarship(true);
         } else {
             statusInfo.setEligibleForMeritScholarship(false); // 봉사 시간 부족 → 지급 불가
         }
 
-        // 변경 사항 저장
         statusInfoRepository.save(statusInfo);
     }
 
@@ -248,38 +242,44 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 이벤트 정보 조회
-        Event clubEvent = eventRepository.findByName("동아리 지원")
-                .orElseThrow(() -> new IllegalArgumentException("동아리 지원 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("동아리 지원", user);
 
-        // 현재 학기에서의 활성화 여부 확인
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(clubEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("이미 동아리에 가입되어 있거나, 동아리 지원이 불가능합니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("동아리 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
-        float clubSelectionProbability = clubEvent.getProbability() != null ? clubEvent.getProbability() : 0.8f;
+        float clubSelectionProbability = eventChapter.getEvent().getProbability() != null
+                ? eventChapter.getEvent().getProbability()
+                : 0.8f;
 
-        // 확률 계산
         boolean isSelected = Math.random() < clubSelectionProbability;
         if (!isSelected) {
             return Response.buildResponse(null, "동아리 지원 불합격");
         }
 
-        // 동아리 가입 처리
-        statusInfo.joinClub();
+        Plan clubActivity = planRepository.findByPlanName("동아리 활동")
+                .orElseThrow(() -> new IllegalArgumentException("동아리 활동 계획이 존재하지 않습니다."));
 
-/*        // 동아리 활동을 계획표에 추가
-        Plan clubActivity = Plan.builder()
-                .planName("동아리 활동")
-                .period(Period.ACADEMIC)
-                .user(user)
-                .build();
-        planRepository.save(clubActivity);*/
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(clubActivity, user)
+                .orElseGet(() -> {
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(clubActivity)
+                            .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(16)
+                            .build();
+                    return planStatusRepository.save(newPlanStatus);
+                });
 
-        // 동아리 지원 이벤트 삭제 (가입 후에는 다시 지원 불가능하도록)
-        eventChaptersRepository.deleteByEventAndActivatedChapter(clubEvent, user.getCurrentChapter());
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(16);
+            planStatusRepository.save(planStatus);
+        }
+
+        // 동아리 지원 이벤트 비활성화
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
 
         statusInfoRepository.save(statusInfo);
 
@@ -293,12 +293,10 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        Event majorClubEvent = eventRepository.findByName("전공학회 지원")
-                .orElseThrow(() -> new IllegalArgumentException("전공 학회 지원 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("전공학회 지원", user);
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(majorClubEvent, user.getCurrentChapter());
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 전공 학회 지원이 불가능합니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("전공 학회 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
         // 지원 조건 확인 (지력 50 이상)
@@ -306,26 +304,25 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
-        Plan majorClubPlan = planRepository.findByUserAndPlanName(user, "전공 학회 활동")
+        Plan majorClubPlan = planRepository.findByPlanName("전공 학회 활동")
+                .orElseThrow(() -> new IllegalArgumentException("전공 학회 활동 계획이 존재하지 않습니다."));
+
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(majorClubPlan, user)
                 .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("전공 학회 활동")
-                            .period(Period.ACADEMIC)
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(majorClubPlan)
                             .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(4) // 1년(2학기) 동안 유지
                             .build();
-                    return planRepository.save(newPlan);
-                });*/
+                    return planStatusRepository.save(newPlanStatus);
+                });
 
-/*        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus majorClubPlanStatus = PlanStatus.builder()
-                .plan(majorClubPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4) // 1년(2학기) 동안 유지
-                .build();
-
-        planStatusRepository.save(majorClubPlanStatus);*/
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(4);
+            planStatusRepository.save(planStatus);
+        }
     }
 
     // 대외활동 지원
@@ -334,86 +331,80 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        Event externalActivityEvent = eventRepository.findByName("대외활동 지원")
-                .orElseThrow(() -> new IllegalArgumentException("대외활동 지원 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("대외활동 지원", user);
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(externalActivityEvent, user.getCurrentChapter());
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("현재 학기에는 대외활동 지원이 불가능합니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("대외활동 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
         if (statusInfo.getSocial() < 40) {
             throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
         }
 
-/*        // 계획표 추가
-        Plan externalActivityPlan = Plan.builder()
-                .planName("대외활동")
-                .period(Period.ACADEMIC) // 학기 중 활동
-                .user(user)
-                .build();
-        planRepository.save(externalActivityPlan);
+        Plan externalActivityPlan = planRepository.findByPlanName("대외활동")
+                .orElseThrow(() -> new IllegalArgumentException("대외활동 계획이 존재하지 않습니다."));
 
-        // 계획 상태 추가 - 1년 유지
-        PlanStatus planStatus = PlanStatus.builder()
-                .plan(externalActivityPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4)
-                .build();
-        planStatusRepository.save(planStatus);*/
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(externalActivityPlan, user)
+                .orElseGet(() -> {
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(externalActivityPlan)
+                            .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(4) // 1년(2학기) 동안 유지
+                            .build();
+                    return planStatusRepository.save(newPlanStatus);
+                });
+
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(4);
+            planStatusRepository.save(planStatus);
+        }
     }
 
+    // 리더십 그룹 지원
     @Transactional
     public Response<String> applyForLeadershipGroup(Long userId) {
         User user = getUser(userId);
 
-        // 이벤트 존재 여부 확인
-        Event leadershipEvent = eventRepository.findByName("리더십그룹 지원")
-                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 지원 이벤트가 존재하지 않습니다."));
+        EventChapters eventChapter = validateEventParticipation("리더십그룹 지원", user);
 
-        boolean isEventAvailable = eventChaptersRepository.existsByEventAndActivatedChapter(leadershipEvent, user.getCurrentChapter());
-
-        if (!isEventAvailable) {
-            throw new IllegalArgumentException("이미 리더십그룹에 가입되어 있거나, 지원이 불가능합니다.");
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("리더십그룹 지원이 비활성화되어 진행할 수 없습니다.");
         }
 
-        // 합격 확률 설정 (디폴트 80%)
-        float selectionProbability = leadershipEvent.getProbability() != null ? leadershipEvent.getProbability() : 0.8f;
+        float selectionProbability = eventChapter.getEvent().getProbability() != null
+                ? eventChapter.getEvent().getProbability()
+                : 0.8f;
 
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-/*        // Plan 객체 생성 (중복 방지를 위해 먼저 검색)
-        Plan leadershipPlan = planRepository.findByUserAndPlanName(user, "리더십그룹 활동")
+        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹 활동")
+                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 활동 계획이 존재하지 않습니다."));
+
+        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(leadershipPlan, user)
                 .orElseGet(() -> {
-                    Plan newPlan = Plan.builder()
-                            .planName("리더십그룹 활동")
-                            .period(Period.ACADEMIC)
+                    PlanStatus newPlanStatus = PlanStatus.builder()
+                            .plan(leadershipPlan)
                             .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(4) // 1년(2학기) 동안 유지
                             .build();
-                    return planRepository.save(newPlan);
+                    return planStatusRepository.save(newPlanStatus);
                 });
 
-        // PlanStatus 추가 (1년 유지, 즉 2학기 동안 활성화)
-        PlanStatus leadershipPlanStatus = PlanStatus.builder()
-                .plan(leadershipPlan)
-                .user(user)
-                .isActivated(true)
-                .remainingSemesters(4)
-                .build();
-
-        planStatusRepository.save(leadershipPlanStatus);*/
+        if (!planStatus.isActivated()) {
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(4);
+            planStatusRepository.save(planStatus);
+        }
 
         return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
     }
 
-    public List<String> getAvailableEvents(Long userId) {
-        User user = getUser(userId);
-        return eventService.getAvailableEvents(userId, user.getCurrentChapter());
-    }
 
 
     // 유저 정보 조회 메소드들
@@ -430,5 +421,20 @@ public class RegularEventService {
     private StatusInfo getUserStatus(User user) {
         return statusInfoRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+    }
+
+    public EventChapters validateEventParticipation(String eventName, User user) {
+        // 이벤트 존재 여부 확인
+        Event event = eventRepository.findByName(eventName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트입니다."));
+
+        // 현재 챕터에서 해당 이벤트가 활성화되었는지 확인
+        if (!event.getActivatedChapters().contains(user.getCurrentChapter())) {
+            throw new IllegalArgumentException("현재 학기에는 " + eventName + " 이벤트를 신청할 수 없습니다.");
+        }
+
+        // 유저의 이벤트 활성화 여부 확인
+        return eventChaptersRepository.findByEventAndUser(event, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }
 }

@@ -22,48 +22,6 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EventChaptersRepository eventChaptersRepository;
 
-    // 현재 학기에서 가능한 모든 이벤트 조회
-    public List<String> getAvailableEvents(Long userId, Chapter currentChapter) {
-        User user = getUser(userId);
-        StatusInfo statusInfo = getUserStatus(user);
-
-        List<EventChapters> events = eventChaptersRepository.findByActivatedChapter(currentChapter);
-
-        return events.stream()
-                .map(eventChapter -> eventChapter.getEvent().getName())
-                .filter(eventName -> !eventName.equals("동아리 지원") || !statusInfo.isClubMember()) // 동아리 지원 필터링
-                .collect(Collectors.toList());
-    }
-
-    // 새로운 이벤트를 특정 챕터에 추가
-    @Transactional
-    public void addEventToChapter(String eventName, Chapter chapter, boolean isProbabilistic, Float probability) {
-        // 이벤트가 이미 존재하는지 확인
-        Event event = eventRepository.findByName(eventName)
-                .orElseGet(() -> {
-                    // 이벤트가 없으면 새로 생성 후 저장
-                    Event newEvent = Event.builder()
-                            .name(eventName)
-                            .isProbabilistic(isProbabilistic)
-                            .probability(probability)
-                            .build();
-                    return eventRepository.save(newEvent);
-                });
-
-        // 이미 해당 챕터에 등록된 이벤트인지 확인 (중복 방지)
-        boolean alreadyExists = eventChaptersRepository.existsByEventAndActivatedChapter(event, chapter);
-        if (alreadyExists) {
-            throw new IllegalArgumentException("이미 해당 챕터에 등록된 이벤트입니다.");
-        }
-
-        // 이벤트 챕터에 추가
-        EventChapters eventChapter = EventChapters.builder()
-                .event(event)
-                .activatedChapter(chapter)
-                .build();
-
-        eventChaptersRepository.save(eventChapter);
-    }
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)
