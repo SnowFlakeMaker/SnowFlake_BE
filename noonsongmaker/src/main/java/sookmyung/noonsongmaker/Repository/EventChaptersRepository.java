@@ -16,4 +16,5 @@ public interface EventChaptersRepository extends JpaRepository<EventChapters, Lo
     // 특정 유저가 특정 이벤트에 대해 활성화 상태인지 조회
     Optional<EventChapters> findByEventAndUser(Event event, User user);
 
+    List<EventChapters> findByUserAndIsActivatedTrue(User user);
 }
