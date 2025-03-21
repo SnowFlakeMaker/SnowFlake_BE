@@ -79,6 +79,12 @@ public class CourseService {
             results.put("electiveCredits", updated);
         }
 
+        if (requestDto.getDmCredits() != null) {
+            boolean updated = policy.isDmUpdatePossible();
+            if (updated) course.updateDmCredits(requestDto.getDmCredits());
+            results.put("dmCredits", updated);
+        }
+
         if (requestDto.getRequiredDigital() != null) {
             boolean updated = policy.isLibUpdatePossible();
             if (updated) course.updateRequiredDigital(requestDto.getRequiredDigital());

@@ -23,6 +23,8 @@ public class Course {
     private Integer coreCredits;
     private Integer electiveCredits;
 
+    private Integer dmCredits; // 복수전공(double) 혹은 부전공(minor) 학점
+
     private Boolean requiredDigital;
     private Boolean requiredFuture;
     private Boolean requiredEng;
@@ -39,6 +41,8 @@ public class Course {
     public void updateElectiveCredits(Integer elective) {
         if (elective != null) this.electiveCredits += elective;
     }
+
+    public void updateDmCredits(Integer dm) { if (dm != null) this.dmCredits += dm; }
 
     public void updateRequiredDigital(Boolean digital) {
         if (digital != null) this.requiredDigital = digital;

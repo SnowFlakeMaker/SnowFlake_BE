@@ -10,6 +10,8 @@ public class TimetableSubmitRequestDto {
     private Integer coreCredits;
     private Integer electiveCredits;
 
+    private Integer dmCredits;
+
     @JsonProperty("디사의")
     private Boolean requiredDigital;
     @JsonProperty("미래설계")
