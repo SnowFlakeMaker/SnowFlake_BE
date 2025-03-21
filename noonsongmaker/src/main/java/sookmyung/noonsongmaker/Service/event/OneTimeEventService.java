@@ -8,10 +8,7 @@ import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.UserService;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static sookmyung.noonsongmaker.Entity.Chapter.getNextChapter;
 
@@ -98,7 +95,9 @@ public class OneTimeEventService {
                 .orElseThrow(() -> new NoSuchElementException("유저 프로필을 찾을 수 없습니다."))
                 .getMajorType();
 
-        Map<String, Object> response = new HashMap<>();
+        validateEventParticipation("졸업인증제", user);
+
+        Map<String, Object> response = new LinkedHashMap<>();
         boolean isGraduatable = true;
 
         // 교양 필수(12학점) 체크 (모든 과목을 들어야 함)

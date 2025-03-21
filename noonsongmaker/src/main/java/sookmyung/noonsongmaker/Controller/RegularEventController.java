@@ -69,17 +69,14 @@ public class RegularEventController {
 
     // 국가장학금 신청
     @PostMapping("/scholarships")
-    public ResponseEntity<Response<Map<String, CoinResponseDto>>> applyScholarship(@CurrentUser User user) {
-        CoinResponseDto updatedStats = regularEventService.applyScholarship(user.getId());
+    public ResponseEntity<Response<Map<String, Object>>> applyScholarship(@CurrentUser User user) {
+        regularEventService.applyScholarship(user.getId());
 
-        Map<String, CoinResponseDto> response = new HashMap<>();
-        response.put("updated_coin", updatedStats);
-
-        return ResponseEntity.ok(Response.buildResponse(response, "국가장학금 신청 완료"));
+        return ResponseEntity.ok(new Response<>("국가장학금 신청 완료. 등록금 납부 시 200코인 감면됩니다.", null));
     }
 
     // 등록금 대리납부
-    @PostMapping("/tuition_help")
+    @PostMapping("/tuition/help")
     public ResponseEntity<Response<Map<String, CoinAndStressResponseDto>>> requestTuitionHelp(
             @CurrentUser User user,
             @RequestParam int parentSupport) {

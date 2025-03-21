@@ -74,7 +74,7 @@ public class IntroService {
         // EventChapters 초기화
         List<EventChapters> eventChaptersList = new ArrayList<>();
         for (Event event : allEvents) {
-            boolean isInitiallyActivated = !event.getName().equals("교환학생 진행"); // 교환학생 진행은 기본적으로 비활성화
+            boolean isInitiallyActivated = !event.getName().equals("교환학생 진행") && !event.getName().equals("성적장학금");
 
             EventChapters eventChapter = EventChapters.builder()
                     .event(event)

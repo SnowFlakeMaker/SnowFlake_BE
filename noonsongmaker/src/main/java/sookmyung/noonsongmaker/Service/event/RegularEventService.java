@@ -108,9 +108,10 @@ public class RegularEventService {
         int tuitionFee = statusInfo.isHasScholarship() ? 200 : 400; // 국장 신청 여부에 따라 등록금 결정
 
         if (statusInfo.getCoin() < tuitionFee) {
-            throw new IllegalArgumentException("코인이 부족하여 등록금을 납부할 수 없습니다.");
+            throw new IllegalArgumentException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.");
         }
 
+        statusInfo.resetScholarship();
         statusInfo.modifyStat("coin", -tuitionFee);
         statusInfoRepository.save(statusInfo);
         return new CoinResponseDto(statusInfo);
@@ -119,7 +120,7 @@ public class RegularEventService {
 
     // 국가장학금 신청
     @Transactional
-    public CoinResponseDto applyScholarship(Long userId) {
+    public Response<Object> applyScholarship(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -130,7 +131,7 @@ public class RegularEventService {
 
         statusInfo.applyScholarship();
         statusInfoRepository.save(statusInfo);
-        return new CoinResponseDto(statusInfo);
+        return Response.buildResponse(null, "국가장학금 신청이 완료되었습니다.");
     }
 
     // 등록금 대리납부 (국가장학금 반영)
@@ -148,9 +149,10 @@ public class RegularEventService {
             throw new IllegalArgumentException("대리납부 가능한 범위는 " + remainingAmount + " ~ " + tuitionFee + " 코인 사이여야 합니다.");
         }
 
-        // 현재 가진 코인 모두 사용 후 부모님이 지원한 코인 추가
-        statusInfo.modifyStat("coin", -statusInfo.getCoin());
         statusInfo.modifyStat("coin", parentSupport);
+        statusInfo.modifyStat("coin", -tuitionFee);
+
+        statusInfo.resetScholarship();
 
         // 빌린 금액의 10%만큼 스트레스 증가
         int stressIncrease = (int) Math.ceil(parentSupport * 0.1);
