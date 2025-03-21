@@ -33,5 +33,12 @@ public class EventService {
                 .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
     }
 
+    public List<String> getOneTimeEvents(User user) {
+        return eventChaptersRepository.findByUserAndIsActivatedTrue(user).stream()
+                .map(EventChapters::getEvent)
+                .filter(event -> !event.isRegular())
+                .map(Event::getName)
+                .collect(Collectors.toList());
+    }
 
 }

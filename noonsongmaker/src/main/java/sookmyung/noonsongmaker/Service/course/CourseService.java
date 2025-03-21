@@ -9,6 +9,7 @@ import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Entity.UserProfile;
 import sookmyung.noonsongmaker.Repository.CourseRepository;
 import sookmyung.noonsongmaker.Repository.UserProfileRepository;
+import sookmyung.noonsongmaker.Service.sse.SseService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -119,6 +120,7 @@ public class CourseService {
             if (updated) course.updateCore4(requestDto.getCore4());
             results.put("core4", updated);
         }
+
 
         return TimetableSubmitResponseDto.builder()
                 .updateResults(results)
