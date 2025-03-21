@@ -18,6 +18,8 @@ public class UserService {
     private final StatusInfoRepository statusInfoRepository;
     private final RegularEventService regularEventService;
     private final PlanStatusRepository planStatusRepository;
+    private final EventRepository eventRepository;
+    private final EventChaptersRepository eventChaptersRepository;
 
 
     // 학기 변경
@@ -71,6 +73,11 @@ public class UserService {
             regularEventService.checkVolunteerHoursForScholarship(userId);
         }
 
+        // 조건 충족 시 학석사 연계과정 활성화
+        if (statusInfo.getGrit() >= 60 && statusInfo.getIntelligence() >= 70) {
+            activateGraduateIntegratedEvent(user);
+        }
+
         // 학기 변경
         user.setCurrentChapter(nextChapter);
         userRepository.save(user);
@@ -88,5 +95,16 @@ public class UserService {
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+    }
+
+    private void activateGraduateIntegratedEvent(User user) {
+        Event graduateEvent = eventRepository.findByName("학석사 연계과정 신청")
+                .orElseThrow(() -> new IllegalArgumentException("학석사 연계과정 이벤트가 존재하지 않습니다."));
+
+        EventChapters eventChapter = eventChaptersRepository.findByEventAndUser(graduateEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("학석사 연계과정 이벤트가 존재하지 않습니다."));
+
+        eventChapter.setIsActivated(true);
+        eventChaptersRepository.save(eventChapter);
     }
 }

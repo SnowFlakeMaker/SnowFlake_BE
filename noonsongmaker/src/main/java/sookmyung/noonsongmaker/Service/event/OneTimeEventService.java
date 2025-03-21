@@ -292,6 +292,48 @@ public class OneTimeEventService {
         return Response.buildResponse(null, "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
     }
 
+    // 학석사 연계과정 신청
+    @Transactional
+    public Response<String> applyForGraduateIntegrated(Long userId) {
+        User user = getUser(userId);
+
+        // 학석사 연계과정 신청 이벤트 가져오기
+        EventChapters applyEventChapter = validateEventParticipation("학석사 연계과정 신청", user);
+        if (!applyEventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("학석사 연계과정 신청 조건을 충족하지 못했습니다.");
+        }
+
+        // 학석사 연계과정 신청 이벤트 비활성화
+        applyEventChapter.setIsActivated(false);
+        eventChaptersRepository.save(applyEventChapter);
+
+        // 대학원생 시퀀스 진행 이벤트 활성화
+        Event graduateEvent = eventRepository.findByName("대학원생 시퀀스 진행")
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters graduateEventChapter = eventChaptersRepository.findByEventAndUser(graduateEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        graduateEventChapter.setIsActivated(true);
+        eventChaptersRepository.save(graduateEventChapter);
+
+        return Response.buildResponse(null, "학석사 연계과정 신청 완료. 엔딩 전 대학원생 시퀀스를 진행할 수 있습니다.");
+    }
+
+    // 대학원생 시퀀스 진행 여부 확인
+    @Transactional(readOnly = true)
+    public Response<Boolean> isGraduateSequenceActive(Long userId) {
+        User user = getUser(userId);
+
+        Event graduateEvent = eventRepository.findByName("대학원생 시퀀스 진행")
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters graduateEventChapter = eventChaptersRepository.findByEventAndUser(graduateEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+
+        return Response.buildResponse(graduateEventChapter.getIsActivated(), "대학원생 시퀀스 진행 이벤트 활성 상태 조회 완료. true라면 진행해주세요.");
+    }
+
     private User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
@@ -312,7 +354,6 @@ public class OneTimeEventService {
             throw new IllegalArgumentException("현재 학기에는 " + eventName + " 이벤트를 신청할 수 없습니다.");
         }
 
-        // 유저의 이벤트 활성화 여부 확인
         return eventChaptersRepository.findByEventAndUser(event, user)
                 .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }

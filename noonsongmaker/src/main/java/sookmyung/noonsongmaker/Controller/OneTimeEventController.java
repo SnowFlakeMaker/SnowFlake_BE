@@ -57,4 +57,16 @@ public class OneTimeEventController {
         Response<String> response = oneTimeEventService.proceedExchangeStudent(user.getId());
         return ResponseEntity.ok(response);
     }
+
+    // 학석사 연계과정 신청
+    @PostMapping("/apply")
+    public ResponseEntity<Response<String>> applyForGraduateIntegrated(@CurrentUser User user) {
+        return ResponseEntity.ok(oneTimeEventService.applyForGraduateIntegrated(user.getId()));
+    }
+
+    // 대학원생 시퀀스 진행 여부 조회
+    @GetMapping("/graduate-sequence/status")
+    public ResponseEntity<Response<Boolean>> isGraduateSequenceActive(@CurrentUser User user) {
+        return ResponseEntity.ok(oneTimeEventService.isGraduateSequenceActive(user.getId()));
+    }
 }
