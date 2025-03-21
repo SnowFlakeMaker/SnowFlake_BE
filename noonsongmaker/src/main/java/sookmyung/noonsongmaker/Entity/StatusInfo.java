@@ -70,8 +70,6 @@ public class StatusInfo {
     @Column(nullable = false)
     private boolean eligibleForMeritScholarship = false; // 성적 장학금 받을 자격 여부
 
-    private boolean isClubMember = false;
-
     // 국가장학금 신청 여부 등록
     public void applyScholarship() {
         this.hasScholarship = true;
@@ -87,10 +85,6 @@ public class StatusInfo {
     public void applyMeritScholarship(int amount) {
         this.scholarshipAmount = amount;
         this.eligibleForMeritScholarship = false; // 장학금 지급 후 초기화
-    }
-
-    public void joinClub() {
-        this.isClubMember = true;
     }
 
     // 성적 장학금 초기화 (학기 변경 시 호출)

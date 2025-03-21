@@ -22,9 +22,15 @@ public class UserService {
 
     // 학기 변경
     @Transactional
-    public void changeSemester(Long userId, Chapter newChapter) {
+    public void changeSemester(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
+
+        Chapter nextChapter = Chapter.getNextChapter(user.getCurrentChapter());
+        if (nextChapter == null) {
+            throw new IllegalStateException("마지막 학기 이후에는 더 이상 학기를 변경할 수 없습니다.");
+        }
+
 
         // 현재 학기에 맞게 계획을 활성화/비활성화
         List<PlanStatus> userPlanStatuses = planStatusRepository.findByUser(user);
@@ -33,11 +39,11 @@ public class UserService {
             boolean shouldActivate = false;
 
             // 학기 중(SEM_) 활성화
-            if (planStatus.getPlan().getPeriod() == Period.ACADEMIC && newChapter.name().startsWith("SEM_")) {
+            if (planStatus.getPlan().getPeriod() == Period.ACADEMIC && nextChapter.name().startsWith("SEM_")) {
                 shouldActivate = true;
             }
             // 방학 중(VAC_) 활성화
-            if (planStatus.getPlan().getPeriod() == Period.VACATION && newChapter.name().startsWith("VAC_")) {
+            if (planStatus.getPlan().getPeriod() == Period.VACATION && nextChapter.name().startsWith("VAC_")) {
                 shouldActivate = true;
             }
 
@@ -66,7 +72,7 @@ public class UserService {
         }
 
         // 학기 변경
-        user.setCurrentChapter(newChapter);
+        user.setCurrentChapter(nextChapter);
         userRepository.save(user);
 
         // 국가장학금 초기화
