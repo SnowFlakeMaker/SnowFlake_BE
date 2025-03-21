@@ -40,16 +40,22 @@ public class UserService {
         for (PlanStatus planStatus : userPlanStatuses) {
             boolean shouldActivate = false;
 
-            // 학기 중(SEM_) 활성화
             if (planStatus.getPlan().getPeriod() == Period.ACADEMIC && nextChapter.name().startsWith("SEM_")) {
                 shouldActivate = true;
             }
-            // 방학 중(VAC_) 활성화
+
             if (planStatus.getPlan().getPeriod() == Period.VACATION && nextChapter.name().startsWith("VAC_")) {
                 shouldActivate = true;
             }
 
-            // 현재 학기에 맞게 활성화 여부 조정
+            if (planStatus.getPlan().getPeriod() == Period.SPECIAL) {
+                shouldActivate = true;
+            }
+            // "자소서 작성" 활동은 VAC_W_3에서만 활성화
+            if (planStatus.getPlan().getPeriod() == Period.SPECIAL && planStatus.getPlan().getPlanName().equals("자소서 작성") && !nextChapter.name().equals("VAC_W_3")) {
+                shouldActivate = false;
+            }
+
             planStatus.setActivated(shouldActivate);
 
             // 남은 학기가 있으면 감소

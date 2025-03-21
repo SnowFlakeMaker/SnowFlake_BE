@@ -53,19 +53,19 @@ public class OneTimeEventController {
 
     // 교환학생 진행
     @PostMapping("exchange/proceed")
-    public ResponseEntity<Response<String>> proceedExchangeStudent(@CurrentUser User user) {
-        Response<String> response = oneTimeEventService.proceedExchangeStudent(user.getId());
+    public ResponseEntity<Response<StatsResponseDto>> proceedExchangeStudent(@CurrentUser User user) {
+        Response<StatsResponseDto> response = oneTimeEventService.proceedExchangeStudent(user.getId());
         return ResponseEntity.ok(response);
     }
 
     // 학석사 연계과정 신청
-    @PostMapping("/apply")
+    @PostMapping("/combined-programs")
     public ResponseEntity<Response<String>> applyForGraduateIntegrated(@CurrentUser User user) {
         return ResponseEntity.ok(oneTimeEventService.applyForGraduateIntegrated(user.getId()));
     }
 
     // 대학원생 시퀀스 진행 여부 조회
-    @GetMapping("/graduate-sequence/status")
+    @GetMapping("/combined-programs/check")
     public ResponseEntity<Response<Boolean>> isGraduateSequenceActive(@CurrentUser User user) {
         return ResponseEntity.ok(oneTimeEventService.isGraduateSequenceActive(user.getId()));
     }

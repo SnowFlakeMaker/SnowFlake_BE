@@ -26,7 +26,6 @@ public class RegularEventService {
     private final StatusInfoRepository statusInfoRepository;
     private final ScheduleRepository scheduleRepository;
     private final PlanRepository planRepository;
-    private final EventService eventService;
     private final EventChaptersRepository eventChaptersRepository;
     private final EventRepository eventRepository;
     private final PlanStatusRepository planStatusRepository;
@@ -283,8 +282,8 @@ public class RegularEventService {
             return Response.buildResponse(null, "동아리 지원 불합격");
         }
 
-        Plan clubActivity = planRepository.findByPlanName("동아리 활동")
-                .orElseThrow(() -> new IllegalArgumentException("동아리 활동 계획이 존재하지 않습니다."));
+        Plan clubActivity = planRepository.findByPlanName("동아리")
+                .orElseThrow(() -> new IllegalArgumentException("동아리 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(clubActivity, user)
                 .orElseGet(() -> {
@@ -330,8 +329,8 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-        Plan majorClubPlan = planRepository.findByPlanName("전공 학회 활동")
-                .orElseThrow(() -> new IllegalArgumentException("전공 학회 활동 계획이 존재하지 않습니다."));
+        Plan majorClubPlan = planRepository.findByPlanName("전공학회")
+                .orElseThrow(() -> new IllegalArgumentException("전공학회 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(majorClubPlan, user)
                 .orElseGet(() -> {
@@ -408,8 +407,8 @@ public class RegularEventService {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹 활동")
-                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 활동 계획이 존재하지 않습니다."));
+        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹")
+                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(leadershipPlan, user)
                 .orElseGet(() -> {
