@@ -9,6 +9,7 @@ import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Entity.UserProfile;
 import sookmyung.noonsongmaker.Repository.CourseRepository;
 import sookmyung.noonsongmaker.Repository.UserProfileRepository;
+import sookmyung.noonsongmaker.Service.sse.SseService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.NoSuchElementException;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserProfileRepository userProfileRepository;
+    private final SseService sseService;
 
     public CreditResponseDto getCurrentCreditStatus(User user) {
         Course courseResult = courseRepository.findByUser(user)
@@ -119,6 +121,8 @@ public class CourseService {
             if (updated) course.updateCore4(requestDto.getCore4());
             results.put("core4", updated);
         }
+
+        sseService.sendOneTimeEventList(user);
 
         return TimetableSubmitResponseDto.builder()
                 .updateResults(results)
