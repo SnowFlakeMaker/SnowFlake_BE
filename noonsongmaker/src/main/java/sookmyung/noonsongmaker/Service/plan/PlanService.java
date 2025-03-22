@@ -1,10 +1,14 @@
 package sookmyung.noonsongmaker.Service.plan;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
+import sookmyung.noonsongmaker.Exception.StressOverflowException;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.sse.SseService;
 
@@ -13,6 +17,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class PlanService {
+    private final Logger log = LoggerFactory.getLogger(PlanService.class);
     private final StatusInfoRepository statusInfoRepository;
     private final PlanRepository planRepository;
     private final PlanStatusRepository planStatusRepository;
@@ -20,6 +25,7 @@ public class PlanService {
     private final ScheduleRepository scheduleRepository;
     private final SseService sseService;
 
+    @Transactional
     public List<PlanExecuteResponseDto> executePlan(List<PlanExecuteRequestDto> requestDto, User user) {
         // sseService.sendOneTimeEventList(user);
 
@@ -29,11 +35,13 @@ public class PlanService {
         Map<Plan, Integer> planCounts = new HashMap<>();
 
         for (PlanExecuteRequestDto task : requestDto) {
+            // log.info("태스크 '{}' 실행 시도 중", task.getTaskName());
             Plan plan = planRepository.findByPlanName(task.getTaskName())
                     .orElseThrow(() -> new IllegalArgumentException("Plan not found: " + task.getTaskName()));
             planCounts.merge(plan, 1, Integer::sum);
             PlanExecuteResponseDto result = applyPlanAndCollectResult(status, task.getTaskName(), plan);
             response.add(result);
+            // log.info("태스크 '{}' 실행 성공", task.getTaskName());
         }
 
         applyAssessment(planCounts, status);
@@ -111,6 +119,15 @@ public class PlanService {
     }
 
     private void applyEffect(StatusInfo status, Effect effect) {
+        if (effect.getStatusName() == StatusName.STRESS) {
+            int currentStress = status.getStress();
+            int updatedStress = currentStress + effect.getChangeAmount();
+
+            if (updatedStress >= 100) {
+                // log.error(실행 중 스트레스 100 도달로 중단됨");
+                throw new StressOverflowException();
+            }
+        }
         switch (effect.getStatusName()) {
             case INTELLIGENCE -> status.updateIntelligence(effect.getChangeAmount());
             case FOREIGNLANG -> status.updateForeignLang(effect.getChangeAmount());

@@ -10,5 +10,5 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 public class TimetableSubmitResponseDto {
-    private Map<String, Boolean> updateResults;
+    private Map<String, Object> updateResults;
 }

@@ -11,6 +11,7 @@ import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.plan.PlanService;
+import sookmyung.noonsongmaker.Util.StressCheckerInEvents;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -47,6 +48,7 @@ public class RegularEventService {
 
         statusInfo.modifyStat("social", 5);
         if (userProfile.getMbti().name().startsWith("I")) {
+            StressCheckerInEvents.checkStressLimit(statusInfo.getStress(), 5);
             statusInfo.modifyStat("stress", 5);
         }
         statusInfoRepository.save(statusInfo);
@@ -69,6 +71,7 @@ public class RegularEventService {
 
         statusInfo.modifyStat("social", 5);
         if (userProfile.getMbti().name().startsWith("I")) {
+            StressCheckerInEvents.checkStressLimit(statusInfo.getStress(), 5);
             statusInfo.modifyStat("stress", 5);
         }
 
@@ -166,6 +169,7 @@ public class RegularEventService {
         statusInfo.setEligibleForMeritScholarship(false);
 
         int stressIncrease = (int) Math.ceil(parentSupport * 0.1);
+        StressCheckerInEvents.checkStressLimit(statusInfo.getStress(), stressIncrease);
         statusInfo.modifyStat("stress", stressIncrease);
 
         statusInfoRepository.save(statusInfo);
