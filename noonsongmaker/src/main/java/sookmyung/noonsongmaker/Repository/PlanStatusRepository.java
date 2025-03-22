@@ -14,6 +14,8 @@ public interface PlanStatusRepository extends JpaRepository<PlanStatus, Long> {
 
     Optional<PlanStatus> findByPlanAndUser(Plan plan, User user);
 
+    List<PlanStatus> findByUserAndIsActivatedTrue(User user);
+
     // 특정 유저의 모든 계획 상태 조회
     List<PlanStatus> findByUser(User user);
 
