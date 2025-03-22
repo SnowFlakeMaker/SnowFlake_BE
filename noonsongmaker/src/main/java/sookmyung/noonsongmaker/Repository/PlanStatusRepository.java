@@ -12,8 +12,6 @@ import java.util.List;
 @Repository
 public interface PlanStatusRepository extends JpaRepository<PlanStatus, Long> {
 
-    List<PlanStatus> findByUserAndIsActivatedTrue(User user);
-
     Optional<PlanStatus> findByPlanAndUser(Plan plan, User user);
 
     // 특정 유저의 모든 계획 상태 조회
