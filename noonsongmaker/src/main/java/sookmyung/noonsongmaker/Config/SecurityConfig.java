@@ -43,7 +43,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
                 .securityContext(securityContext -> securityContext
                         .requireExplicitSave(false)  // SecurityContext 자동 저장 활성화
@@ -81,10 +81,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트엔드 주소
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true); // 인증 정보 포함할 경우 true
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080", "http://52.79.237.120:8080")); // 프론트엔드 주소
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
