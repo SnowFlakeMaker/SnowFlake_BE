@@ -84,7 +84,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true); // 인증 정보 포함할 경우 true
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080", "http://52.79.237.120:8080")); // 프론트엔드 주소
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
