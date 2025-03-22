@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.event.RegularEventService;
+import sookmyung.noonsongmaker.Service.sse.SseService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,6 +21,7 @@ public class UserService {
     private final PlanStatusRepository planStatusRepository;
     private final EventRepository eventRepository;
     private final EventChaptersRepository eventChaptersRepository;
+    private final SseService sseService;
 
 
     // 학기 변경
@@ -91,6 +93,9 @@ public class UserService {
         // 국가장학금 초기화
         statusInfo.resetScholarship();
         statusInfoRepository.save(statusInfo);
+
+        // 정기이벤트 전송
+        sseService.sendRegularEventsList(user);
     }
 
     public StatusInfo getUserStatus(User user) {
