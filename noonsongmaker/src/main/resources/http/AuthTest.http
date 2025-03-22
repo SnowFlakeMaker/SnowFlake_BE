@@ -9,7 +9,7 @@ POST http://localhost:8080/auth/send-email
 Content-Type: application/json
 
 {
-  "emailId": "숙명메일아이디"
+  "emailId": "ksujin5366"
 }
 
 ### Email Varification
@@ -18,8 +18,8 @@ POST http://localhost:8080/auth/verify-code
 Content-Type: application/json
 
 {
-  "emailId": "숙명메일아이디",
-  "code": "인증코드"
+  "emailId": "ksujin5366",
+  "code": "840492"
 }
 
 ### Sign Up
@@ -28,7 +28,7 @@ POST http://localhost:8080/auth/signup
 Content-Type: application/json
 
 {
-  "email": "숙명메일아이디",
+  "email": "ksujin5366",
   "password": "1234"
 }
 
@@ -38,7 +38,7 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "email": "숙명메일아이디",
+  "email": "ksujin5366",
   "password": "1234"
 }
 

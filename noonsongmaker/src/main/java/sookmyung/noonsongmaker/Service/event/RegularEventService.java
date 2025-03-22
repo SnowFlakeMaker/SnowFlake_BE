@@ -1,6 +1,7 @@
 package sookmyung.noonsongmaker.Service.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.Response;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RegularEventService {
@@ -24,7 +26,6 @@ public class RegularEventService {
     private final StatusInfoRepository statusInfoRepository;
     private final ScheduleRepository scheduleRepository;
     private final PlanRepository planRepository;
-    private final EventService eventService;
     private final EventChaptersRepository eventChaptersRepository;
     private final EventRepository eventRepository;
     private final PlanStatusRepository planStatusRepository;
@@ -101,25 +102,33 @@ public class RegularEventService {
 
     // 등록금 납부
     @Transactional
-    public CoinResponseDto payTuition(Long userId) {
+    public Response<CoinResponseDto> payTuition(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        int tuitionFee = statusInfo.isHasScholarship() ? 200 : 400; // 국장 신청 여부에 따라 등록금 결정
+        boolean hasNationalScholarship = statusInfo.isHasScholarship();
+        int meritScholarshipAmount = statusInfo.getScholarshipAmount();
+        int tuitionFee = calculateTuitionFee(statusInfo);
 
         if (statusInfo.getCoin() < tuitionFee) {
-            throw new IllegalArgumentException("코인이 부족하여 등록금을 납부할 수 없습니다.");
+            throw new IllegalArgumentException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.");
         }
 
         statusInfo.modifyStat("coin", -tuitionFee);
+        statusInfo.resetScholarship();
+        statusInfo.setScholarshipAmount(0);
+        statusInfo.setEligibleForMeritScholarship(false);
         statusInfoRepository.save(statusInfo);
-        return new CoinResponseDto(statusInfo);
+
+        String message = generateTuitionResponseMessage(hasNationalScholarship, meritScholarshipAmount, tuitionFee, false);
+
+        return Response.buildResponse(new CoinResponseDto(statusInfo), message);
     }
 
 
     // 국가장학금 신청
     @Transactional
-    public CoinResponseDto applyScholarship(Long userId) {
+    public Response<Object> applyScholarship(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -130,34 +139,40 @@ public class RegularEventService {
 
         statusInfo.applyScholarship();
         statusInfoRepository.save(statusInfo);
-        return new CoinResponseDto(statusInfo);
+        return Response.buildResponse(null, "국가장학금 신청이 완료되었습니다.");
     }
 
-    // 등록금 대리납부 (국가장학금 반영)
+    // 등록금 대리납부
     @Transactional
-    public CoinAndStressResponseDto requestTuitionHelp(Long userId, int parentSupport) {
+    public Response<CoinAndStressResponseDto> requestTuitionHelp(Long userId, int parentSupport) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 국가장학금 적용 여부에 따라 등록금 결정
-        int tuitionFee = statusInfo.isHasScholarship() ? 200 : 400;
+        boolean hasNationalScholarship = statusInfo.isHasScholarship();
+        int meritScholarshipAmount = statusInfo.getScholarshipAmount();
+        int tuitionFee = calculateTuitionFee(statusInfo);
+
         int remainingAmount = tuitionFee - statusInfo.getCoin(); // 최소 필요 금액
 
-        // 빌릴 코인이 최소 필요 금액 이상, 등록금 이하인지 확인
         if (parentSupport < remainingAmount || parentSupport > tuitionFee) {
             throw new IllegalArgumentException("대리납부 가능한 범위는 " + remainingAmount + " ~ " + tuitionFee + " 코인 사이여야 합니다.");
         }
 
-        // 현재 가진 코인 모두 사용 후 부모님이 지원한 코인 추가
-        statusInfo.modifyStat("coin", -statusInfo.getCoin());
         statusInfo.modifyStat("coin", parentSupport);
+        statusInfo.modifyStat("coin", -tuitionFee);
 
-        // 빌린 금액의 10%만큼 스트레스 증가
+        statusInfo.resetScholarship();
+        statusInfo.setScholarshipAmount(0);
+        statusInfo.setEligibleForMeritScholarship(false);
+
         int stressIncrease = (int) Math.ceil(parentSupport * 0.1);
         statusInfo.modifyStat("stress", stressIncrease);
 
         statusInfoRepository.save(statusInfo);
-        return new CoinAndStressResponseDto(statusInfo);
+
+        // 감면 메시지 생성 후 반환
+        String message = generateTuitionResponseMessage(hasNationalScholarship, meritScholarshipAmount, tuitionFee, true);
+        return Response.buildResponse(new CoinAndStressResponseDto(statusInfo), message);
     }
 
     // 학기가 끝날 때 장학금 자격 여부 저장 (학기 중 수업/공부 체크)
@@ -166,20 +181,31 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
-        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+        List<Schedule> userSchedules = scheduleRepository.findByUserAndCurrentChapter(user, user.getCurrentChapter());
 
-        int studyCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
-                .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
+        int studyCount = userSchedules.stream()
+                .filter(schedule -> {
+                    String planName = schedule.getPlan().getPlanName();
+                    return "수업".equals(planName) || "공부".equals(planName);
+                })
                 .mapToInt(Schedule::getCount)
                 .sum();
 
-        // 공부/수업 기준 충족 여부 확인
-        if (studyCount >= 15) {
-            statusInfo.setEligibleForMeritScholarship(true);
-        } else {
-            statusInfo.setEligibleForMeritScholarship(false);
+        // 공부 일정 기준에 따라 장학금 설정
+        int scholarshipAmount = 0;
+        boolean isEligible = false;
+
+        if (studyCount >= 20) {
+            scholarshipAmount = 400; // 전액 장학금
+            isEligible = true;
+        } else if (studyCount >= 15) {
+            scholarshipAmount = 200; // 반액 장학금
+            isEligible = true;
         }
+
+        // 장학금 자격 및 금액 업데이트
+        statusInfo.setEligibleForMeritScholarship(isEligible);
+        statusInfo.setScholarshipAmount(scholarshipAmount);
 
         statusInfoRepository.save(statusInfo);
     }
@@ -190,16 +216,18 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        // 현재 학기 일정 조회 (일정이 없을 경우 기본값 0)
-        List<Schedule> userSchedules = scheduleRepository.findByUser(user);
+        Plan volunteerPlan = planRepository.findByPlanName("봉사")
+                .orElseThrow(() -> new IllegalArgumentException("봉사 계획이 존재하지 않습니다."));
 
-        long serviceCount = userSchedules.isEmpty() ? 0 : userSchedules.stream()
-                .filter(schedule -> schedule.getCurrentChapter().equals(user.getCurrentChapter())) // 현재 학기 일정만 필터링
-                .map(Schedule::getPlan)
-                .filter(plan -> "봉사".equals(plan.getPlanName()))
-                .count();
+        List<Schedule> serviceSchedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
+                user, user.getCurrentChapter(), volunteerPlan
+        );
 
-        // 봉사 시간이 2칸 이상이어야 성적 장학금 지급 가능
+        long serviceCount = serviceSchedules.stream()
+                .mapToInt(Schedule::getCount)
+                .sum();
+
+        // 봉사 시간이 2칸 이상 && 기존 성적 장학금 자격이 있어야 최종 자격 유지
         if (statusInfo.isEligibleForMeritScholarship() && serviceCount >= 2) {
             statusInfo.setEligibleForMeritScholarship(true);
         } else {
@@ -209,7 +237,7 @@ public class RegularEventService {
         statusInfoRepository.save(statusInfo);
     }
 
-    // 방학이 끝날 때 성적장학금 지급 (봉사활동 체크 후 지급)
+/*    // 방학이 끝날 때 성적장학금 지급 (봉사활동 체크 후 지급)
     @Transactional
     public CoinResponseDto grantMeritScholarship(Long userId) {
         User user = getUser(userId);
@@ -221,19 +249,20 @@ public class RegularEventService {
         }
 
         // 성적 장학금 지급 금액 결정
-        int scholarshipAmount = statusInfo.isEligibleForMeritScholarship() ? 400 : 200;
+        int scholarshipAmount = statusInfo.getScholarshipAmount();
 
         // 성적 장학금 지급
-        statusInfo.applyMeritScholarship(scholarshipAmount);
+        statusInfo.modifyStat("coin", scholarshipAmount);
         statusInfo.modifyStat("generalAssess", 10);
         statusInfo.modifyStat("intelligence", 10);
 
         // 지급 후 상태 초기화
+        statusInfo.setScholarshipAmount(0);
         statusInfo.setEligibleForMeritScholarship(false);
 
         statusInfoRepository.save(statusInfo);
         return new CoinResponseDto(statusInfo);
-    }
+    }*/
 
 
     // 동아리 지원 (확률 기반)
@@ -257,8 +286,8 @@ public class RegularEventService {
             return Response.buildResponse(null, "동아리 지원 불합격");
         }
 
-        Plan clubActivity = planRepository.findByPlanName("동아리 활동")
-                .orElseThrow(() -> new IllegalArgumentException("동아리 활동 계획이 존재하지 않습니다."));
+        Plan clubActivity = planRepository.findByPlanName("동아리")
+                .orElseThrow(() -> new IllegalArgumentException("동아리 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(clubActivity, user)
                 .orElseGet(() -> {
@@ -304,8 +333,8 @@ public class RegularEventService {
             throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
         }
 
-        Plan majorClubPlan = planRepository.findByPlanName("전공 학회 활동")
-                .orElseThrow(() -> new IllegalArgumentException("전공 학회 활동 계획이 존재하지 않습니다."));
+        Plan majorClubPlan = planRepository.findByPlanName("전공학회")
+                .orElseThrow(() -> new IllegalArgumentException("전공학회 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(majorClubPlan, user)
                 .orElseGet(() -> {
@@ -382,8 +411,8 @@ public class RegularEventService {
             return Response.buildResponse(null, "리더십그룹 지원 불합격");
         }
 
-        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹 활동")
-                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 활동 계획이 존재하지 않습니다."));
+        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹")
+                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(leadershipPlan, user)
                 .orElseGet(() -> {
@@ -406,6 +435,54 @@ public class RegularEventService {
     }
 
 
+    // 등록금 계산
+    private int calculateTuitionFee(StatusInfo statusInfo) {
+        int baseTuitionFee = 400;
+        boolean hasNationalScholarship = statusInfo.isHasScholarship(); // 국가장학금 여부
+        int meritScholarshipAmount = statusInfo.getScholarshipAmount(); // 성적장학금 (0, 200, 400)
+
+        int totalDiscount = 0;
+
+        // 국가장학금 감면
+        if (hasNationalScholarship) {
+            totalDiscount += 200;
+        }
+
+        totalDiscount += meritScholarshipAmount;
+        int finalTuition = baseTuitionFee - totalDiscount;
+
+        return Math.max(finalTuition, 0);
+    }
+
+
+    // 등록금 납부 메세지 생성
+    private String generateTuitionResponseMessage(boolean hasNationalScholarship, int meritScholarshipAmount, int finalTuition, boolean isTuitionHelp) {
+
+        StringBuilder message = new StringBuilder(isTuitionHelp ? "등록금 대리납부 완료: " : "등록금 납부 완료: ");
+
+        int totalDiscount = 400 - finalTuition;
+        boolean hasAnyScholarship = hasNationalScholarship || meritScholarshipAmount > 0;
+
+        if (hasAnyScholarship) {
+            if (hasNationalScholarship) {
+                message.append("국가장학금 ");
+            }
+            if (meritScholarshipAmount > 0) {
+                if (hasNationalScholarship) {
+                    message.append("및 ");
+                }
+                if (meritScholarshipAmount == 200) {
+                    message.append("성적 장학금(반액) ");
+                } else if (meritScholarshipAmount == 400) {
+                    message.append("성적 장학금(전액) ");
+                }
+            }
+            message.append("적용으로 ");
+        }
+
+        message.append(String.format("%d 코인 감면하여 등록금을 %d 코인 납부했습니다.", totalDiscount, finalTuition));
+        return message.toString();
+    }
 
     // 유저 정보 조회 메소드들
     private User getUser(Long userId) {

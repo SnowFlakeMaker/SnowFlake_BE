@@ -60,7 +60,6 @@ public class StatusInfo {
     @ColumnDefault("100")
     private Integer coin = 100;
 
-
     @Builder.Default
     private boolean hasScholarship = false; // 국가장학금 신청 여부
 
@@ -82,15 +81,8 @@ public class StatusInfo {
         this.eligibleForMeritScholarship = eligible;
     }
 
-    public void applyMeritScholarship(int amount) {
+    public void setScholarshipAmount(int amount) {
         this.scholarshipAmount = amount;
-        this.eligibleForMeritScholarship = false; // 장학금 지급 후 초기화
-    }
-
-    // 성적 장학금 초기화 (학기 변경 시 호출)
-    public void resetMeritScholarship() {
-        this.eligibleForMeritScholarship = false;
-        this.scholarshipAmount = 0;
     }
 
     /**

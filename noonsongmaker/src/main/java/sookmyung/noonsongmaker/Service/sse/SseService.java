@@ -28,7 +28,10 @@ public class SseService {
         return emitter;
     }
 
-    public void sendRegularEventsList(User user) {}
+    public void sendRegularEventsList(User user) {
+        List<String> regularEventNames = eventService.getRegularEvents(user);
+        sendSse(user.getId(), SseEventType.REGULAR_EVENT, regularEventNames);
+    }
 
     public void sendOneTimeEventList(User user) {
         List<String> oneTimeEventsName = eventService.getOneTimeEvents(user);

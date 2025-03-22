@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.Response;
+import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.UserService;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static sookmyung.noonsongmaker.Entity.Chapter.getNextChapter;
 
@@ -37,6 +35,7 @@ public class OneTimeEventService {
     private final UserProfileRepository userProfileRepository;
     private final PlanStatusRepository planStatusRepository;
     private final UserService userService;
+    private final ScheduleRepository scheduleRepository;
 
     // 학생회 지원 (단발성 이벤트)
     @Transactional
@@ -98,7 +97,9 @@ public class OneTimeEventService {
                 .orElseThrow(() -> new NoSuchElementException("유저 프로필을 찾을 수 없습니다."))
                 .getMajorType();
 
-        Map<String, Object> response = new HashMap<>();
+        validateEventParticipation("졸업인증제", user);
+
+        Map<String, Object> response = new LinkedHashMap<>();
         boolean isGraduatable = true;
 
         // 교양 필수(12학점) 체크 (모든 과목을 들어야 함)
@@ -111,7 +112,7 @@ public class OneTimeEventService {
         int generalEducationCredits = hasCompletedGeneralEducation ? REQUIRED_GENERAL_EDU_CREDITS : 0; // 12학점
 
         if (!hasCompletedGeneralEducation) {
-            response.put("교양 필수 부족", "디지털, 미래, 영어, 논리 과목을 모두 수강해야 합니다.");
+            response.put("교양 필수 부족", "디지털시대의사고와의사소통, 미래설계와나의브랜딩, 영어교양필수, 논리적사고와소프트웨어 과목을 모두 수강해야 합니다.");
             isGraduatable = false;
         }
 
@@ -197,14 +198,8 @@ public class OneTimeEventService {
     public Response<String> applyForExchangeStudent(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
-        Chapter currentChapter = user.getCurrentChapter();
 
-        // 5~7학기만 신청 가능
-        if (currentChapter.getSemester() < 5 || currentChapter.getSemester() > 7) {
-            throw new IllegalArgumentException("교환학생 신청은 3학년부터 4학년 1학기까지 가능합니다.");
-        }
-
-        // 이벤트 정보 조회
+        // 이벤트 정보 조회 및 학기 유효성 검사 포함
         EventChapters eventChapter = validateEventParticipation("교환학생 신청", user);
         Event event = eventChapter.getEvent();
 
@@ -220,7 +215,6 @@ public class OneTimeEventService {
             throw new IllegalArgumentException("교환학생 신청 요건을 충족하지 못했습니다.");
         }
 
-        // 신청 성공 여부 결정
         float selectionProbability = event.getProbability() != null ? event.getProbability() : 0.8f;
         boolean isSelected = Math.random() < selectionProbability;
 
@@ -234,11 +228,9 @@ public class OneTimeEventService {
         EventChapters proceedEventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
                 .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
 
-        // 교환학생 진행 이벤트 활성화
         proceedEventChapter.setIsActivated(true);
         eventChaptersRepository.save(proceedEventChapter);
 
-        // 교환학생 신청 이벤트 비활성화
         eventChapter.setIsActivated(false);
         eventChaptersRepository.save(eventChapter);
 
@@ -247,34 +239,25 @@ public class OneTimeEventService {
 
     // 교환학생 진행
     @Transactional
-    public Response<String> proceedExchangeStudent(Long userId) {
+    public Response<StatsResponseDto> proceedExchangeStudent(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
         Course course = courseRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
 
+        // 교환학생 진행 이벤트 유효성 검사 포함
+        EventChapters eventChapter = validateEventParticipation("교환학생 진행", user);
 
-        // 교환학생 진행 이벤트 가져오기
-        Event proceedEvent = eventRepository.findByName("교환학생 진행")
-                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
-
-        // 이벤트 상태 조회
-        EventChapters eventChapter = eventChaptersRepository.findByEventAndUser(proceedEvent, user)
-                .orElseThrow(() -> new IllegalArgumentException("교환학생 진행 이벤트가 존재하지 않습니다."));
-
-        // 이벤트가 비활성화된 경우 진행 불가
         if (!eventChapter.getIsActivated()) {
             throw new IllegalArgumentException("교환학생 진행이 비활성화되어 있습니다.");
         }
 
-        // 코인 차감
         if (statusInfo.getCoin() < 600) {
             throw new IllegalArgumentException("코인이 부족하여 교환학생을 진행할 수 없습니다.");
         }
         statusInfo.modifyStat("coin", -600);
 
-        // 전공 9학점 인정 (ElectiveCredits 증가)
         course.updateElectiveCredits(9);
         courseRepository.save(course);
 
@@ -286,11 +269,101 @@ public class OneTimeEventService {
 
         eventChapter.setIsActivated(false);
         eventChaptersRepository.save(eventChapter);
-
-        // 자동으로 다음 학기로 변경
+        statusInfoRepository.save(statusInfo);
         userService.changeSemester(userId);
 
-        return Response.buildResponse(null, "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+        return Response.buildResponse(new StatsResponseDto(statusInfo), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+    }
+
+    // 학석사 연계과정 신청
+    @Transactional
+    public Response<String> applyForGraduateIntegrated(Long userId) {
+        User user = getUser(userId);
+
+        // 학석사 연계과정 신청 이벤트 가져오기
+        EventChapters applyEventChapter = validateEventParticipation("학석사 연계과정 신청", user);
+        if (!applyEventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("학석사 연계과정을 이미 신청했거나, 신청 조건을 충족하지 못했습니다.");
+        }
+
+        // 학석사 연계과정 신청 이벤트 비활성화
+        applyEventChapter.setIsActivated(false);
+        eventChaptersRepository.save(applyEventChapter);
+
+        // 대학원생 시퀀스 진행 이벤트 활성화
+        Event graduateEvent = eventRepository.findByName("대학원생 시퀀스 진행")
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters graduateEventChapter = eventChaptersRepository.findByEventAndUser(graduateEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        graduateEventChapter.setIsActivated(true);
+        eventChaptersRepository.save(graduateEventChapter);
+
+        return Response.buildResponse(null, "학석사 연계과정 신청 완료. 엔딩 전 대학원생 시퀀스를 진행할 수 있습니다.");
+    }
+
+    // 대학원생 시퀀스 진행 여부 확인
+    @Transactional(readOnly = true)
+    public Response<Boolean> isGraduateSequenceActive(Long userId) {
+        User user = getUser(userId);
+
+        Event graduateEvent = eventRepository.findByName("대학원생 시퀀스 진행")
+                .orElseThrow(() -> new IllegalArgumentException("대학원생 시퀀스 진행 이벤트가 존재하지 않습니다."));
+
+        EventChapters graduateEventChapter = eventChaptersRepository.findByEventAndUser(graduateEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+
+        return Response.buildResponse(graduateEventChapter.getIsActivated(), "대학원생 시퀀스 진행 이벤트 활성 상태 조회 완료. true라면 진행해주세요.");
+    }
+
+    @Transactional
+    public Response<String> applyForInternship(Long userId) {
+        User user = getUser(userId);
+
+        EventChapters eventChapter = validateEventParticipation("인턴 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("인턴 지원 이벤트가 비활성화되어 있습니다.");
+        }
+
+        Plan coverLetterPlan = planRepository.findByPlanName("자소서 작성")
+                .orElseThrow(() -> new IllegalArgumentException("자소서 작성 계획이 존재하지 않습니다."));
+
+        List<Schedule> schedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
+                user, Chapter.VAC_W_3, coverLetterPlan
+        );
+
+        int totalCount = schedules.stream()
+                .mapToInt(Schedule::getCount)
+                .sum();
+
+        // 인턴 합격 여부 판단
+        boolean isAccepted = totalCount >= 5;
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        if (isAccepted) {
+/*            Plan internPlan = planRepository.findByPlanName("인턴")
+                    .orElseThrow(() -> new IllegalArgumentException("인턴 계획이 존재하지 않습니다."));
+
+            PlanStatus planStatus = planStatusRepository.findByPlanAndUser(internPlan, user)
+                    .orElseGet(() -> PlanStatus.builder()
+                            .plan(internPlan)
+                            .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(1)
+                            .build());
+
+            // 이미 존재할 경우 업데이트
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(2);
+            planStatusRepository.save(planStatus);*/
+
+            return Response.buildResponse(null, "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
+        } else {
+            return Response.buildResponse(null, "인턴 지원 불합격.");
+        }
     }
 
     private User getUser(Long userId) {
@@ -313,7 +386,6 @@ public class OneTimeEventService {
             throw new IllegalArgumentException("현재 학기에는 " + eventName + " 이벤트를 신청할 수 없습니다.");
         }
 
-        // 유저의 이벤트 활성화 여부 확인
         return eventChaptersRepository.findByEventAndUser(event, user)
                 .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }
