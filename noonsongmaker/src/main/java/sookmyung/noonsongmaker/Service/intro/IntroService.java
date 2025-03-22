@@ -32,6 +32,11 @@ public class IntroService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
+        if (user.getCurrentChapter() == null) {
+            user.setCurrentChapter(Chapter.SEM_S_1);
+            userRepository.save(user); // 변경사항 저장
+        }
+
         // 기존 프로필 존재 확인
         if (userProfileRepository.existsByUser(user)) {
             throw new IllegalArgumentException("이미 프로필이 존재합니다.");
@@ -74,7 +79,10 @@ public class IntroService {
         // EventChapters 초기화
         List<EventChapters> eventChaptersList = new ArrayList<>();
         for (Event event : allEvents) {
-            boolean isInitiallyActivated = !event.getName().equals("교환학생 진행"); // 교환학생 진행은 기본적으로 비활성화
+            boolean isInitiallyActivated = !event.getName().equals("교환학생 진행")
+                    && !event.getName().equals("성적장학금")
+                    && !event.getName().equals("학석사 연계과정 신청")
+                    && !event.getName().equals("대학원생 시퀀스 진행");
 
             EventChapters eventChapter = EventChapters.builder()
                     .event(event)
