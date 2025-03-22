@@ -2,7 +2,9 @@ package sookmyung.noonsongmaker.Service.auth;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,8 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.jwt.JwtProvider;
 
+import java.time.Duration;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -75,23 +80,37 @@ public class AuthService {
     }
 
     public String refreshAccessToken(String refreshToken, HttpServletResponse response) {
-        if (!jwtProvider.validateToken(refreshToken)) throw new IllegalArgumentException("유효하지 않은 Refresh Token");
+        log.info("[refreshAccessToken] Called with token: {}", refreshToken);
+
+        if (!jwtProvider.validateToken(refreshToken)) {
+            log.warn("[refreshAccessToken] Invalid refresh token");
+            throw new IllegalArgumentException("유효하지 않은 Refresh Token");
+        }
 
         String email = jwtProvider.getEmailFromToken(refreshToken);
-        if (!refreshTokenService.validateRefreshToken(email, refreshToken))
+        log.info("[refreshAccessToken] Email extracted from token: {}", email);
+
+        if (!refreshTokenService.validateRefreshToken(email, refreshToken)) {
+            log.warn("[refreshAccessToken] Refresh token invalid or expired for email: {}", email);
             throw new IllegalArgumentException("만료되었거나 사용 불가능한 Refresh Token");
+        }
 
         String newAccessToken = jwtProvider.generateAccessToken(email);
+        log.info("[refreshAccessToken] New access token issued for email: {}", email);
         setCookie(response, "ACCESS_TOKEN", newAccessToken, 60 * 60);
         return email;
     }
 
     private void setCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(maxAgeSeconds);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .path("/")
+                .httpOnly(true)
+                .secure(false) // Set to true in production
+                .maxAge(Duration.ofSeconds(maxAgeSeconds))
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public void logout(String refreshToken, HttpServletResponse response) {
