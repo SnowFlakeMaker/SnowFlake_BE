@@ -66,65 +66,115 @@ public class CourseService {
         Course course = courseRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("수강 정보 소유자 없음"));
         TimetableUpdatePolicy policy = new TimetableUpdatePolicy(user.getCurrentChapter());
-        Map<String, Boolean> results = new HashMap<>();
+        Map<String, Object> results = new HashMap<>();
 
         if (requestDto.getCoreCredits() != null) {
-            boolean updated = policy.isMajorUpdatePossible();
-            if (updated) course.updateCoreCredits(requestDto.getCoreCredits());
-            results.put("coreCredits", updated);
+            int count = requestDto.getCoreCredits();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isMajorUpdatePossible();
+                if (updated) course.updateCoreCredits(1);
+                resultArray[i] = updated;
+            }
+
+            results.put("coreCredits", resultArray);
         }
+
         if (requestDto.getElectiveCredits() != null) {
-            boolean updated = policy.isMajorUpdatePossible();
-            if (updated) course.updateElectiveCredits(requestDto.getElectiveCredits());
-            results.put("electiveCredits", updated);
+            int count = requestDto.getElectiveCredits();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isMajorUpdatePossible();
+                if (updated) course.updateElectiveCredits(1);
+                resultArray[i] = updated;
+            }
+
+            results.put("electiveCredits", resultArray);
         }
 
         if (requestDto.getDmCredits() != null) {
-            boolean updated = policy.isDmUpdatePossible();
-            if (updated) course.updateDmCredits(requestDto.getDmCredits());
-            results.put("dmCredits", updated);
+            int count = requestDto.getDmCredits();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isDmUpdatePossible();
+                if (updated) course.updateDmCredits(1);
+                resultArray[i] = updated;
+            }
+
+            results.put("dmCredits", resultArray);
         }
 
         if (requestDto.getRequiredDigital() != null) {
             boolean updated = policy.isLibUpdatePossible();
             if (updated) course.updateRequiredDigital(requestDto.getRequiredDigital());
-            results.put("requiredDigital", updated);
+            results.put("디사의", updated);
         }
         if (requestDto.getRequiredFuture() != null) {
             boolean updated = policy.isLibUpdatePossible();
             if (updated) course.updateRequiredFuture(requestDto.getRequiredFuture());
-            results.put("requiredFuture", updated);
+            results.put("미래설계", updated);
         }
         if (requestDto.getRequiredEng() != null) {
             boolean updated = policy.isLibUpdatePossible();
             if (updated) course.updateRequiredEng(requestDto.getRequiredEng());
-            results.put("requiredEng", updated);
+            results.put("영교필", updated);
         }
         if (requestDto.getRequiredLogic() != null) {
             boolean updated = policy.isLibUpdatePossible();
             if (updated) course.updateRequiredLogic(requestDto.getRequiredLogic());
-            results.put("requiredLogic", updated);
+            results.put("논사소", updated);
         }
 
         if (requestDto.getCore1() != null) {
-            boolean updated = policy.isLibUpdatePossible();
-            if (updated) course.updateCore1(requestDto.getCore1());
-            results.put("core1", updated);
+            int count = requestDto.getCore1();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isLibUpdatePossible();
+                if (updated) course.updateCore1((short) 1);
+                resultArray[i] = updated;
+            }
+
+            results.put("core1", resultArray);
         }
         if (requestDto.getCore2() != null) {
-            boolean updated = policy.isLibUpdatePossible();
-            if (updated)course.updateCore2(requestDto.getCore2());
-            results.put("core2", updated);
+            int count = requestDto.getCore2();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isLibUpdatePossible();
+                if (updated) course.updateCore2((short) 1);
+                resultArray[i] = updated;
+            }
+
+            results.put("core2", resultArray);
         }
         if (requestDto.getCore3() != null) {
-            boolean updated = policy.isLibUpdatePossible();
-            if (updated) course.updateCore3(requestDto.getCore3());
-            results.put("core3", updated);
+            int count = requestDto.getCore3();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isLibUpdatePossible();
+                if (updated) course.updateCore3((short) 1);
+                resultArray[i] = updated;
+            }
+
+            results.put("core3", resultArray);
         }
         if (requestDto.getCore4() != null) {
-            boolean updated = policy.isLibUpdatePossible();
-            if (updated) course.updateCore4(requestDto.getCore4());
-            results.put("core4", updated);
+            int count = requestDto.getCore4();
+            boolean[] resultArray = new boolean[count];
+
+            for (int i = 0; i < count; i++) {
+                boolean updated = policy.isLibUpdatePossible();
+                if (updated) course.updateCore4((short) 1);
+                resultArray[i] = updated;
+            }
+
+            results.put("core4", resultArray);
         }
 
 
