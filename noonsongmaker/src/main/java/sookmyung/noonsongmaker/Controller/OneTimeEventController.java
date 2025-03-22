@@ -69,4 +69,11 @@ public class OneTimeEventController {
     public ResponseEntity<Response<Boolean>> isGraduateSequenceActive(@CurrentUser User user) {
         return ResponseEntity.ok(oneTimeEventService.isGraduateSequenceActive(user.getId()));
     }
+
+    // 인턴 지원
+    @PostMapping("/internship")
+    public ResponseEntity<Response<String>> applyForIntern(@CurrentUser User user) {
+        Response<String> response = oneTimeEventService.applyForInternship(user.getId());
+        return ResponseEntity.ok(response);
+    }
 }

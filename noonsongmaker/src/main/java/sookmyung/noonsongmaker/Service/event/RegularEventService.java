@@ -216,10 +216,14 @@ public class RegularEventService {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
-        List<Schedule> userSchedules = scheduleRepository.findByUserAndCurrentChapter(user, user.getCurrentChapter());
+        Plan volunteerPlan = planRepository.findByPlanName("봉사")
+                .orElseThrow(() -> new IllegalArgumentException("봉사 계획이 존재하지 않습니다."));
 
-        long serviceCount = userSchedules.stream()
-                .filter(schedule -> "봉사".equals(schedule.getPlan().getPlanName()))
+        List<Schedule> serviceSchedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
+                user, user.getCurrentChapter(), volunteerPlan
+        );
+
+        long serviceCount = serviceSchedules.stream()
                 .mapToInt(Schedule::getCount)
                 .sum();
 

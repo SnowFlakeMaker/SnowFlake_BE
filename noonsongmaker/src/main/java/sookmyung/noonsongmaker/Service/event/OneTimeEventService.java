@@ -35,6 +35,7 @@ public class OneTimeEventService {
     private final UserProfileRepository userProfileRepository;
     private final PlanStatusRepository planStatusRepository;
     private final UserService userService;
+    private final ScheduleRepository scheduleRepository;
 
     // 학생회 지원 (단발성 이벤트)
     @Transactional
@@ -314,6 +315,55 @@ public class OneTimeEventService {
                 .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
 
         return Response.buildResponse(graduateEventChapter.getIsActivated(), "대학원생 시퀀스 진행 이벤트 활성 상태 조회 완료. true라면 진행해주세요.");
+    }
+
+    @Transactional
+    public Response<String> applyForInternship(Long userId) {
+        User user = getUser(userId);
+
+        EventChapters eventChapter = validateEventParticipation("인턴 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("인턴 지원 이벤트가 비활성화되어 있습니다.");
+        }
+
+        Plan coverLetterPlan = planRepository.findByPlanName("자소서 작성")
+                .orElseThrow(() -> new IllegalArgumentException("자소서 작성 계획이 존재하지 않습니다."));
+
+        List<Schedule> schedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
+                user, Chapter.VAC_W_3, coverLetterPlan
+        );
+
+        int totalCount = schedules.stream()
+                .mapToInt(Schedule::getCount)
+                .sum();
+
+        // 인턴 합격 여부 판단
+        boolean isAccepted = totalCount >= 5;
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        if (isAccepted) {
+/*            Plan internPlan = planRepository.findByPlanName("인턴")
+                    .orElseThrow(() -> new IllegalArgumentException("인턴 계획이 존재하지 않습니다."));
+
+            PlanStatus planStatus = planStatusRepository.findByPlanAndUser(internPlan, user)
+                    .orElseGet(() -> PlanStatus.builder()
+                            .plan(internPlan)
+                            .user(user)
+                            .isActivated(true)
+                            .remainingSemesters(1)
+                            .build());
+
+            // 이미 존재할 경우 업데이트
+            planStatus.setActivated(true);
+            planStatus.setRemainingSemesters(2);
+            planStatusRepository.save(planStatus);*/
+
+            return Response.buildResponse(null, "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
+        } else {
+            return Response.buildResponse(null, "인턴 지원 불합격.");
+        }
     }
 
     private User getUser(Long userId) {
