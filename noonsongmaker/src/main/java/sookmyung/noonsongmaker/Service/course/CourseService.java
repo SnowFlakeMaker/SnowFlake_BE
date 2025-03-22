@@ -68,8 +68,8 @@ public class CourseService {
         TimetableUpdatePolicy policy = new TimetableUpdatePolicy(user.getCurrentChapter());
         Map<String, Object> results = new HashMap<>();
 
-        if (requestDto.getCoreCredits() != null) {
-            int count = requestDto.getCoreCredits();
+        if (requestDto.getEssential() != null) {
+            int count = requestDto.getEssential();
             boolean[] resultArray = new boolean[count];
 
             for (int i = 0; i < count; i++) {
@@ -81,8 +81,8 @@ public class CourseService {
             results.put("coreCredits", resultArray);
         }
 
-        if (requestDto.getElectiveCredits() != null) {
-            int count = requestDto.getElectiveCredits();
+        if (requestDto.getElective() != null) {
+            int count = requestDto.getElective();
             boolean[] resultArray = new boolean[count];
 
             for (int i = 0; i < count; i++) {
