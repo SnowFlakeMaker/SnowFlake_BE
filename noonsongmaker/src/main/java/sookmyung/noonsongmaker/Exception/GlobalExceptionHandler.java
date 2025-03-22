@@ -86,4 +86,13 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(StressOverflowException.class)
+    public ResponseEntity<Response<Object>> handleStressEnding(Exception ex) {
+        Response<Object> response = new Response<>(
+                ex.getMessage(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response); // 405
+    }
 }
