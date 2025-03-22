@@ -50,7 +50,7 @@ public class AuthController {
         return ResponseEntity.ok(Response.buildResponse(responseData, "로그인 성공"));
     }
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<Response<Map<String, String>>> refreshToken(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) {
             throw new IllegalArgumentException("쿠키에 Refresh Token이 없습니다.");
@@ -63,7 +63,7 @@ public class AuthController {
         return ResponseEntity.ok(Response.buildResponse(responseData, "Access Token 갱신 성공"));
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<Response<String>> logout(@CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken, HttpServletResponse response) {
         if (refreshToken != null) {
             authService.logout(refreshToken, response);
