@@ -141,5 +141,5 @@ public class StatusInfo {
 
     public void updateGlobalAssess(int amount) { this.globalAssess = changeValueWithinBound(this.globalAssess, amount); }
 
-    public void updateCoin(int amount) { this.coin = Math.min(0, this.coin + amount); }
+    public void updateCoin(int amount) { this.coin = Math.max(0, this.coin + amount); }
 }
