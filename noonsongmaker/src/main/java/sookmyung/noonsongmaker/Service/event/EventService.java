@@ -23,16 +23,6 @@ public class EventService {
     private final EventChaptersRepository eventChaptersRepository;
 
 
-    private User getUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
-    }
-
-    private StatusInfo getUserStatus(User user) {
-        return statusInfoRepository.findByUser(user)
-                .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
-    }
-
     public List<String> getRegularEvents(User user) {
         return eventChaptersRepository.findByUserAndIsActivatedTrue(user).stream()
                 .map(EventChapters::getEvent)

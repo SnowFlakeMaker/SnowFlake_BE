@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requireExplicitSave(false)  // SecurityContext 자동 저장 활성화
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email","/intro/info-new", "/auth/refresh").permitAll()
+                        .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email","/intro/info-new", "/auth/refresh", "/sse/subscribe").permitAll()
 
                         .anyRequest().authenticated()
                 )
@@ -85,6 +85,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080", "http://52.79.237.120:8080")); // 프론트엔드 주소
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        configuration.setExposedHeaders(List.of("Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

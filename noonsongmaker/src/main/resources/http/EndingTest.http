@@ -2,6 +2,11 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
+### 정상 엔딩
+GET http://localhost:8080/ending/final
+Content-Type: application/json
+Cookie:
+
 ### Stress 100_계획 실행 중: DB에서 스탯 99로 설정하고 실행
 POST http://localhost:8080/plan/execute
 Content-Type: application/json
@@ -26,4 +31,4 @@ Content-Type: application/json
 ### Stress 100_이벤트 실행 중
 POST http://localhost:8080/event/orientation
 Content-Type: application/json
-Cookie: ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5c2owNTA5IiwiaWF0IjoxNzQyNjU2MTQyLCJleHAiOjE3NDI2NTk3NDJ9.U7uw522hV_FDYcIMewUshczK6nEJuLqe7nGAiCD_0Ds
+Cookie:
