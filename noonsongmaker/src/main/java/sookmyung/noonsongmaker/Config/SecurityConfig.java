@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requireExplicitSave(false)  // SecurityContext 자동 저장 활성화
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email","/intro/info-new", "/auth/refresh", "/sse/subscribe").permitAll()
+                        .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email","/intro/info-new", "/auth/refresh", "/sse/subscribe/{userId}").permitAll()
 
                         .anyRequest().authenticated()
                 )
