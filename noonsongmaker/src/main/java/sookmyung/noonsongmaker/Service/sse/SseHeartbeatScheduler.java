@@ -19,14 +19,16 @@ public class SseHeartbeatScheduler {
 
     @Scheduled(fixedRate = 10000)
     public void sendHeartbeats() {
+        log.info("Heartbeat scheduler triggered. Total emitters: {}", emitterRegistry.getAllEmitters().size());
         for (SseEmitter emitter : emitterRegistry.getAllEmitters()) {
+            log.info("Sending heartbeat to an emitter...");
             try {
                 emitter.send(SseEmitter.event().
                         name(SseEventType.HEARTBEAT.name().toLowerCase())
                         .data("ping"));
             } catch (IOException e) {
                 emitter.complete();
-                log.warn("Emitter failed during heartbeat and was completed: {}", e.getMessage());
+                log.warn("Emitter failed during heartbeat and was completed due to: {}", e.getMessage());
             }
         }
     }
