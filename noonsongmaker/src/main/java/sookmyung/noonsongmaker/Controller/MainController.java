@@ -48,11 +48,11 @@ public class MainController {
 
     // 학기 변경
     @PostMapping("/change-semester")
-    public ResponseEntity<Response<Void>> changeSemester(
+    public ResponseEntity<Response<ChapterResponseDto>> changeSemester(
             @CurrentUser User user) {
 
-        userService.changeSemester(user.getId());
-        return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", null));
+        ChapterResponseDto response = userService.changeSemester(user.getId());
+        return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", response));
     }
 
     // 현재 스탯 조회

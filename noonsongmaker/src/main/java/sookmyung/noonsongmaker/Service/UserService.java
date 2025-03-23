@@ -3,6 +3,7 @@ package sookmyung.noonsongmaker.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sookmyung.noonsongmaker.Dto.main.ChapterResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.event.RegularEventService;
@@ -26,7 +27,7 @@ public class UserService {
 
     // 학기 변경
     @Transactional
-    public void changeSemester(Long userId) {
+    public ChapterResponseDto changeSemester(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -96,6 +97,8 @@ public class UserService {
 
         // 정기이벤트 전송
         sseService.sendRegularEventsList(user);
+
+        return new ChapterResponseDto(nextChapter);
     }
 
     public StatusInfo getUserStatus(User user) {
