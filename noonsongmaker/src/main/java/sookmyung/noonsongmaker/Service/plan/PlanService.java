@@ -27,7 +27,7 @@ public class PlanService {
 
     @Transactional
     public List<PlanExecuteResponseDto> executePlan(List<PlanExecuteRequestDto> requestDto, User user) {
-        // sseService.sendOneTimeEventList(user);
+        sseService.sendOneTimeEventList(user);
 
         List<PlanExecuteResponseDto> response = new ArrayList<>();
         StatusInfo status = statusInfoRepository.findByUser(user)

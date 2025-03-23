@@ -95,7 +95,7 @@ public class UserService {
         statusInfoRepository.save(statusInfo);
 
         // 정기이벤트 전송
-        // sseService.sendRegularEventsList(user);
+        sseService.sendRegularEventsList(user);
     }
 
     public StatusInfo getUserStatus(User user) {
