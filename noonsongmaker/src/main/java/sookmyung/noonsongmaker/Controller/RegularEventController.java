@@ -26,9 +26,11 @@ public class RegularEventController {
     private final EventService eventService;
 
 
+    // 정기이벤트 반환
     @GetMapping("/regular")
-    public List<String> getCurrentSemesterRegularEvents(@CurrentUser User user) {
-        return eventService.getRegularEvents(user);
+    public ResponseEntity<Response<Object>> getCurrentSemesterRegularEvents(@CurrentUser User user) {
+        List<String> events = eventService.getRegularEvents(user);
+        return ResponseEntity.ok(new Response<>("현재 학기의 정기 이벤트 목록을 불러왔습니다.", events));
     }
 
     // 개강총회

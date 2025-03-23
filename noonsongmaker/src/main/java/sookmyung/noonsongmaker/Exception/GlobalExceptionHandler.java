@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    // 500 Internal Server Error
+/*    // 500 Internal Server Error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Object>> handleGlobalException(Exception ex) {
         Response<Object> response = new Response<>(
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
+    }*/
 
     @ExceptionHandler(StressOverflowException.class)
     public ResponseEntity<Response<Object>> handleStressEnding(Exception ex) {
@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409 Conflict
     }
 
-    @ExceptionHandler(Exception.class)
+/*    @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Object>> handleGlobalException(HttpServletRequest request, Exception ex) {
         if ("text/event-stream".equals(request.getHeader("Accept"))) {
             log.warn("SSE 요청 중 예외 발생, 에러 전송 생략");
@@ -119,6 +119,23 @@ public class GlobalExceptionHandler {
         Response<Object> response = new Response<>(
                 "알 수 없는 오류가 발생했습니다.",
                 null
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }*/
+
+
+    // 500 error
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Response<Object>> handleGlobalException(HttpServletRequest request, Exception ex) {
+        if (request != null && "text/event-stream".equals(request.getHeader("Accept"))) {
+            log.warn("SSE 요청 중 예외 발생, 에러 전송 생략");
+            return null; // SSE는 응답 안 보냄
+        }
+
+        log.error("예외 발생", ex);
+        Response<Object> response = new Response<>(
+                "서버 내부 오류가 발생했습니다.",
+                ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }

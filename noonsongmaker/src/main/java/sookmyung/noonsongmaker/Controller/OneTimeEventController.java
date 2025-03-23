@@ -24,10 +24,10 @@ public class OneTimeEventController {
     private final UserProfileService userProfileService;
     private final EventService eventService;
 
-
     @GetMapping("/onetime")
-    public List<String> getCurrentSemesterRegularEvents(@CurrentUser User user) {
-        return eventService.getOneTimeEvents(user);
+    public ResponseEntity<Response<Object>> getCurrentSemesterOnetimeEvents(@CurrentUser User user) {
+        List<String> events =  eventService.getOneTimeEvents(user);
+        return ResponseEntity.ok(new Response<>("현재 학기의 단발성 이벤트 목록을 불러왔습니다.", events));
     }
 
     // 학생회 지원

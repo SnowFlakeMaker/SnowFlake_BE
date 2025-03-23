@@ -109,6 +109,7 @@ public class RegularEventService {
     public Response<TuitionResponseDto> payTuition(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
+        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
 
         boolean hasNationalScholarship = statusInfo.isHasScholarship();
         int meritScholarshipAmount = statusInfo.getScholarshipAmount();
@@ -121,8 +122,10 @@ public class RegularEventService {
         statusInfo.modifyStat("coin", -tuitionFee);
         statusInfo.resetScholarship();
         statusInfo.setScholarshipAmount(0);
+        eventChapter.setIsActivated(false);
         statusInfo.setEligibleForMeritScholarship(false);
         statusInfoRepository.save(statusInfo);
+        eventChaptersRepository.save(eventChapter);
 
         String message = generateTuitionResponseMessage(hasNationalScholarship, meritScholarshipAmount, tuitionFee, false);
         return Response.buildResponse(new TuitionResponseDto(statusInfo, true), message);
@@ -157,6 +160,8 @@ public class RegularEventService {
 
         int remainingAmount = tuitionFee - statusInfo.getCoin(); // 최소 필요 금액
 
+        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
+
         if (parentSupport < remainingAmount || parentSupport > tuitionFee) {
             throw new IllegalArgumentException("대리납부 가능한 범위는 " + remainingAmount + " ~ " + tuitionFee + " 코인 사이여야 합니다.");
         }
@@ -166,6 +171,7 @@ public class RegularEventService {
 
         statusInfo.resetScholarship();
         statusInfo.setScholarshipAmount(0);
+        eventChapter.setIsActivated(false);
         statusInfo.setEligibleForMeritScholarship(false);
 
         int stressIncrease = (int) Math.ceil(parentSupport * 0.1);
@@ -173,6 +179,7 @@ public class RegularEventService {
         statusInfo.modifyStat("stress", stressIncrease);
 
         statusInfoRepository.save(statusInfo);
+        eventChaptersRepository.save(eventChapter);
 
         // 감면 메시지 생성 후 반환
         String message = generateTuitionResponseMessage(hasNationalScholarship, meritScholarshipAmount, tuitionFee, true);
@@ -231,13 +238,18 @@ public class RegularEventService {
                 .mapToInt(Schedule::getCount)
                 .sum();
 
+        EventChapters eventChapter = getEventChapter("성적장학금", user);
+
         // 봉사 시간이 2칸 이상 && 기존 성적 장학금 자격이 있어야 최종 자격 유지
         if (statusInfo.isEligibleForMeritScholarship() && serviceCount >= 2) {
+            eventChapter.setIsActivated(true);
             statusInfo.setEligibleForMeritScholarship(true);
         } else {
+            eventChapter.setIsActivated(false);
             statusInfo.setEligibleForMeritScholarship(false); // 봉사 시간 부족 → 지급 불가
         }
 
+        eventChaptersRepository.save(eventChapter);
         statusInfoRepository.save(statusInfo);
     }
 
@@ -519,6 +531,15 @@ public class RegularEventService {
         }
 
         // 유저의 이벤트 활성화 여부 확인
+        return eventChaptersRepository.findByEventAndUser(event, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+    }
+
+    public EventChapters getEventChapter(String eventName, User user) {
+
+        Event event = eventRepository.findByName(eventName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트입니다."));
+
         return eventChaptersRepository.findByEventAndUser(event, user)
                 .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
     }
