@@ -362,7 +362,7 @@ public class RegularEventService {
 
     // 대외활동 지원
     @Transactional
-    public void applyForExternalActivity(Long userId) {
+    public Response<Object> applyForExternalActivity(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -373,7 +373,7 @@ public class RegularEventService {
         }
 
         if (statusInfo.getSocial() < 40) {
-            throw new IllegalArgumentException("대외활동 지원 요건을 충족하지 못했습니다. (사회성 40 이상 필요)");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "대외활동 지원 불합격.");
         }
 
         Plan externalActivityPlan = planRepository.findByPlanName("대외활동")
@@ -395,6 +395,8 @@ public class RegularEventService {
             planStatus.setRemainingSemesters(4);
             planStatusRepository.save(planStatus);
         }
+
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "대외활동 지원 합격. 활동이 추가되었습니다.");
     }
 
     // 리더십 그룹 지원

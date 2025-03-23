@@ -8,9 +8,11 @@ import sookmyung.noonsongmaker.Dto.event.MajorInfoResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Service.UserProfileService;
+import sookmyung.noonsongmaker.Service.event.EventService;
 import sookmyung.noonsongmaker.Service.event.OneTimeEventService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,6 +22,13 @@ public class OneTimeEventController {
 
     private final OneTimeEventService oneTimeEventService;
     private final UserProfileService userProfileService;
+    private final EventService eventService;
+
+
+    @GetMapping("/onetime")
+    public List<String> getCurrentSemesterRegularEvents(@CurrentUser User user) {
+        return eventService.getOneTimeEvents(user);
+    }
 
     // 학생회 지원
     @PostMapping("/council")

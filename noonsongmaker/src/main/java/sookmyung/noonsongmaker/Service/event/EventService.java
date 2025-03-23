@@ -1,25 +1,22 @@
 package sookmyung.noonsongmaker.Service.event;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sookmyung.noonsongmaker.Entity.*;
+import sookmyung.noonsongmaker.Entity.Event;
+import sookmyung.noonsongmaker.Entity.EventChapters;
+import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Repository.EventChaptersRepository;
 import sookmyung.noonsongmaker.Repository.EventRepository;
 import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
 import sookmyung.noonsongmaker.Repository.UserRepository;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EventService {
 
-    private final StatusInfoRepository statusInfoRepository;
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
     private final EventChaptersRepository eventChaptersRepository;
 
 

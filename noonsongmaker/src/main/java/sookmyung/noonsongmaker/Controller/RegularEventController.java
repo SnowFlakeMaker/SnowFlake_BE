@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.event.*;
 import sookmyung.noonsongmaker.Service.UserProfileService;
+import sookmyung.noonsongmaker.Service.event.EventService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Service.UserService;
@@ -22,6 +23,13 @@ public class RegularEventController {
 
     private final RegularEventService regularEventService;
     private final UserProfileService userProfileService;
+    private final EventService eventService;
+
+
+    @GetMapping("/regular")
+    public List<String> getCurrentSemesterRegularEvents(@CurrentUser User user) {
+        return eventService.getRegularEvents(user);
+    }
 
     // 개강총회
     @PostMapping("/orientation")
@@ -105,9 +113,9 @@ public class RegularEventController {
 
     // 대외활동 지원
     @PostMapping("/external")
-    public ResponseEntity<Response<String>> applyForExternalActivity(@CurrentUser User user) {
-        regularEventService.applyForExternalActivity(user.getId());
-        return ResponseEntity.ok(new Response<>("대외활동 지원 완료", null));
+    public ResponseEntity<Response<Object>> applyForExternalActivity(@CurrentUser User user) {
+        Response<Object> response = regularEventService.applyForExternalActivity(user.getId());
+        return ResponseEntity.ok(response);
     }
 
     // 리더십 그룹 지원
