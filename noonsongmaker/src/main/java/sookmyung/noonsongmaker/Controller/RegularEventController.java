@@ -58,7 +58,7 @@ public class RegularEventController {
 
     // 등록금 납부
     @PostMapping("/tuition")
-    public ResponseEntity<Response<CoinResponseDto>> payTuition(@CurrentUser User user) {
+    public ResponseEntity<Response<TuitionResponseDto>> payTuition(@CurrentUser User user) {
         return ResponseEntity.ok(regularEventService.payTuition(user.getId()));
     }
 
@@ -78,7 +78,7 @@ public class RegularEventController {
         return ResponseEntity.ok(regularEventService.requestTuitionHelp(user.getId(), parentSupport));
     }
 
-/*    // 성적 장학금 지급 (유저 요청 시 실행)
+    // 성적 장학금 지급 (유저 요청 시 실행)
     @PostMapping("/merit")
     public ResponseEntity<Response<Map<String, CoinResponseDto>>> grantMeritScholarship(@CurrentUser User user) {
         CoinResponseDto updatedStats = regularEventService.grantMeritScholarship(user.getId());
@@ -87,7 +87,7 @@ public class RegularEventController {
         response.put("updated_coin", updatedStats);
 
         return ResponseEntity.ok(Response.buildResponse(response, "성적 장학금 지급 완료"));
-    }*/
+    }
 
     // 동아리 지원
     @PostMapping("/club")

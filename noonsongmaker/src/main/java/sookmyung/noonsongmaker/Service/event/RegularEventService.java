@@ -4,11 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sookmyung.noonsongmaker.Dto.FailureResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.event.CoinAndStressResponseDto;
 import sookmyung.noonsongmaker.Dto.event.CoinResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
+import sookmyung.noonsongmaker.Dto.event.TuitionResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
+import sookmyung.noonsongmaker.Exception.ActionRefusedException;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.plan.PlanService;
 import sookmyung.noonsongmaker.Util.StressCheckerInEvents;
@@ -105,7 +108,7 @@ public class RegularEventService {
 
     // 등록금 납부
     @Transactional
-    public Response<CoinResponseDto> payTuition(Long userId) {
+    public Response<TuitionResponseDto> payTuition(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -114,7 +117,7 @@ public class RegularEventService {
         int tuitionFee = calculateTuitionFee(statusInfo);
 
         if (statusInfo.getCoin() < tuitionFee) {
-            throw new IllegalArgumentException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.");
+            throw new ActionRefusedException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.", new FailureResponseDto(false));
         }
 
         statusInfo.modifyStat("coin", -tuitionFee);
@@ -124,8 +127,7 @@ public class RegularEventService {
         statusInfoRepository.save(statusInfo);
 
         String message = generateTuitionResponseMessage(hasNationalScholarship, meritScholarshipAmount, tuitionFee, false);
-
-        return Response.buildResponse(new CoinResponseDto(statusInfo), message);
+        return Response.buildResponse(new TuitionResponseDto(statusInfo, true), message);
     }
 
 
@@ -241,7 +243,7 @@ public class RegularEventService {
         statusInfoRepository.save(statusInfo);
     }
 
-/*    // 방학이 끝날 때 성적장학금 지급 (봉사활동 체크 후 지급)
+    // 방학이 끝날 때 성적장학금 지급 (봉사활동 체크 후 지급)
     @Transactional
     public CoinResponseDto grantMeritScholarship(Long userId) {
         User user = getUser(userId);
@@ -266,7 +268,7 @@ public class RegularEventService {
 
         statusInfoRepository.save(statusInfo);
         return new CoinResponseDto(statusInfo);
-    }*/
+    }
 
 
     // 동아리 지원 (확률 기반)

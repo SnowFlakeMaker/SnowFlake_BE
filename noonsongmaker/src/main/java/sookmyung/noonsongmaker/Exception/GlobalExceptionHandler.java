@@ -95,4 +95,13 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response); // 405
     }
+
+    @ExceptionHandler(ActionRefusedException.class)
+    public ResponseEntity<Response<Object>> handleActionRefused(ActionRefusedException ex) {
+        Response<Object> response = new Response<>(
+                ex.getMessage(),
+                ex.getData() // isSuccess: false
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409 Conflict
+    }
 }
