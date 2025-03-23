@@ -33,8 +33,15 @@ public class OneTimeEventController {
     // 학생회 지원
     @PostMapping("/council")
     public ResponseEntity<Response<Object>> applyForStudentCouncil(@CurrentUser User user) {
-        Response<Object> response =oneTimeEventService.applyForStudentCouncil(user.getId());
+        Response<Object> response = oneTimeEventService.applyForStudentCouncil(user.getId());
 
+        return ResponseEntity.ok(response);
+    }
+
+    // 리더십 그룹 지원
+    @PostMapping("/leadership")
+    public ResponseEntity<Response<Object>> applyForLeadershipGroup(@CurrentUser User user) {
+        Response<Object> response = oneTimeEventService.applyForLeadershipGroup(user.getId());
         return ResponseEntity.ok(response);
     }
 

@@ -411,49 +411,6 @@ public class RegularEventService {
         return Response.buildResponse(new CheckSuccessResponseDto(true), "대외활동 지원 합격. 활동이 추가되었습니다.");
     }
 
-    // 리더십 그룹 지원
-    @Transactional
-    public Response<Object> applyForLeadershipGroup(Long userId) {
-        User user = getUser(userId);
-
-        EventChapters eventChapter = validateEventParticipation("리더십그룹 지원", user);
-
-        if (!eventChapter.getIsActivated()) {
-            throw new IllegalArgumentException("리더십그룹 지원이 비활성화되어 진행할 수 없습니다.");
-        }
-
-        float selectionProbability = eventChapter.getEvent().getProbability() != null
-                ? eventChapter.getEvent().getProbability()
-                : 0.8f;
-
-        boolean isSelected = Math.random() < selectionProbability;
-        if (!isSelected) {
-            return Response.buildResponse(new CheckSuccessResponseDto(false), "리더십그룹 지원 불합격");
-        }
-
-        Plan leadershipPlan = planRepository.findByPlanName("리더십그룹")
-                .orElseThrow(() -> new IllegalArgumentException("리더십그룹 계획이 존재하지 않습니다."));
-
-        PlanStatus planStatus = planStatusRepository.findByPlanAndUser(leadershipPlan, user)
-                .orElseGet(() -> {
-                    PlanStatus newPlanStatus = PlanStatus.builder()
-                            .plan(leadershipPlan)
-                            .user(user)
-                            .isActivated(true)
-                            .remainingSemesters(4) // 1년(2학기) 동안 유지
-                            .build();
-                    return planStatusRepository.save(newPlanStatus);
-                });
-
-        if (!planStatus.isActivated()) {
-            planStatus.setActivated(true);
-            planStatus.setRemainingSemesters(4);
-            planStatusRepository.save(planStatus);
-        }
-
-        return Response.buildResponse(new CheckSuccessResponseDto(true), "리더십그룹 합격. 활동이 추가되었습니다.");
-    }
-
 
     // 등록금 계산
     private int calculateTuitionFee(StatusInfo statusInfo) {

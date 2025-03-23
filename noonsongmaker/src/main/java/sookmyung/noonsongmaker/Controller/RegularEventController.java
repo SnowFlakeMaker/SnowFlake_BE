@@ -120,13 +120,6 @@ public class RegularEventController {
         return ResponseEntity.ok(response);
     }
 
-    // 리더십 그룹 지원
-    @PostMapping("/leadership")
-    public ResponseEntity<Response<Object>> applyForLeadershipGroup(@CurrentUser User user) {
-        Response<Object> response = regularEventService.applyForLeadershipGroup(user.getId());
-        return ResponseEntity.ok(response);
-    }
-
     // 전공 신청
     @PostMapping("/major")
     public ResponseEntity<Response<MajorInfoResponseDto>> applyForMajor(@CurrentUser User user,
