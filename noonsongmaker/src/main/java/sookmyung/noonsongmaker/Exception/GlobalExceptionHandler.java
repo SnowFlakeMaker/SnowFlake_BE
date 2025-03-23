@@ -1,5 +1,7 @@
 package sookmyung.noonsongmaker.Exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import sookmyung.noonsongmaker.Dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import javax.naming.AuthenticationException;
 import java.nio.file.AccessDeniedException;
 import java.util.NoSuchElementException;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -103,5 +106,20 @@ public class GlobalExceptionHandler {
                 ex.getData() // isSuccess: false
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409 Conflict
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Response<Object>> handleGlobalException(HttpServletRequest request, Exception ex) {
+        if ("text/event-stream".equals(request.getHeader("Accept"))) {
+            log.warn("SSE 요청 중 예외 발생, 에러 전송 생략");
+            return null; // 응답 무시
+        }
+
+        log.error("예외 발생", ex);
+        Response<Object> response = new Response<>(
+                "알 수 없는 오류가 발생했습니다.",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

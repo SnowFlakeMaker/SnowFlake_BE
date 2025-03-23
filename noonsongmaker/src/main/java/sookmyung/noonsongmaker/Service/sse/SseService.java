@@ -41,15 +41,16 @@ public class SseService {
 
     private void sendSse(Long userId, SseEventType eventType, Object data) {
         SseEmitter emitter = emitterRegistry.get(userId);
-        try {
-            SseEventResponseDto response = new SseEventResponseDto(data);
-            emitter.send(SseEmitter.event()
-                    .name(eventType.name().toLowerCase())
-                    .data(response));
-        } catch (IOException e) {
-            log.error("SSE 전송 실패. user_id {}: {}", userId, e.getMessage());
-            emitter.complete();
-            emitterRegistry.remove(userId);
+        if (emitter == null) return;
+
+        synchronized (emitter) {
+            try {
+                emitter.send(SseEmitter.event().name(eventType.name().toLowerCase()).data(data));
+            } catch (IOException | IllegalStateException e) {
+                log.warn("SSE 전송 실패 후 제거: {}", e.getMessage());
+                emitter.complete();
+                emitterRegistry.remove(userId);
+            }
         }
     }
 }
