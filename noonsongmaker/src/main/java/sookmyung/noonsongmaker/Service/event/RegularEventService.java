@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sookmyung.noonsongmaker.Dto.FailureResponseDto;
+import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.event.CoinAndStressResponseDto;
 import sookmyung.noonsongmaker.Dto.event.CoinResponseDto;
@@ -13,12 +13,10 @@ import sookmyung.noonsongmaker.Dto.event.TuitionResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Exception.ActionRefusedException;
 import sookmyung.noonsongmaker.Repository.*;
-import sookmyung.noonsongmaker.Service.plan.PlanService;
 import sookmyung.noonsongmaker.Util.StressCheckerInEvents;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -117,7 +115,7 @@ public class RegularEventService {
         int tuitionFee = calculateTuitionFee(statusInfo);
 
         if (statusInfo.getCoin() < tuitionFee) {
-            throw new ActionRefusedException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.", new FailureResponseDto(false));
+            throw new ActionRefusedException("코인이 부족하여 등록금을 납부할 수 없습니다. 등록금 대리납부를 진행해 주세요.", new CheckSuccessResponseDto(false));
         }
 
         statusInfo.modifyStat("coin", -tuitionFee);
@@ -289,7 +287,7 @@ public class RegularEventService {
 
         boolean isSelected = Math.random() < clubSelectionProbability;
         if (!isSelected) {
-            return Response.buildResponse(null, "동아리 지원 불합격");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "동아리 지원 불합격");
         }
 
         Plan clubActivity = planRepository.findByPlanName("동아리")
@@ -318,13 +316,13 @@ public class RegularEventService {
 
         statusInfoRepository.save(statusInfo);
 
-        return Response.buildResponse(null, "동아리 지원 합격. 활동이 추가되었습니다.");
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "동아리 지원 합격. 활동이 추가되었습니다.");
     }
 
 
     // 전공학회 지원
     @Transactional
-    public void applyForMajorClub(Long userId) {
+    public Response<Object> applyForMajorClub(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -336,7 +334,7 @@ public class RegularEventService {
 
         // 지원 조건 확인 (지력 50 이상)
         if (statusInfo.getIntelligence() < 50) {
-            throw new IllegalArgumentException("전공 학회 지원 요건을 충족하지 못했습니다. (지력 50 이상 필요)");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "전공학회 지원 불합격.");
         }
 
         Plan majorClubPlan = planRepository.findByPlanName("전공학회")
@@ -358,6 +356,8 @@ public class RegularEventService {
             planStatus.setRemainingSemesters(4);
             planStatusRepository.save(planStatus);
         }
+
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "전공학회 지원 합격. 활동이 추가되었습니다.");
     }
 
     // 대외활동 지원
@@ -399,7 +399,7 @@ public class RegularEventService {
 
     // 리더십 그룹 지원
     @Transactional
-    public Response<String> applyForLeadershipGroup(Long userId) {
+    public Response<Object> applyForLeadershipGroup(Long userId) {
         User user = getUser(userId);
 
         EventChapters eventChapter = validateEventParticipation("리더십그룹 지원", user);
@@ -414,7 +414,7 @@ public class RegularEventService {
 
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
-            return Response.buildResponse(null, "리더십그룹 지원 불합격");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "리더십그룹 지원 불합격");
         }
 
         Plan leadershipPlan = planRepository.findByPlanName("리더십그룹")
@@ -437,7 +437,7 @@ public class RegularEventService {
             planStatusRepository.save(planStatus);
         }
 
-        return Response.buildResponse(null, "리더십그룹 합격. 활동이 추가되었습니다.");
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "리더십그룹 합격. 활동이 추가되었습니다.");
     }
 
 

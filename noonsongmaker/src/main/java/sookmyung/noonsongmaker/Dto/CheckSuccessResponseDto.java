@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FailureResponseDto {
-    private final boolean isSuccess;
+public class CheckSuccessResponseDto {
+    private final boolean success;
 }

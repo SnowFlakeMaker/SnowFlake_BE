@@ -6,10 +6,11 @@ import sookmyung.noonsongmaker.Entity.StatusInfo;
 @Getter
 public class TuitionResponseDto {
     private final int coin;
-    private final boolean isSuccess;
+    private final boolean success;
 
-    public TuitionResponseDto(StatusInfo statusInfo, boolean isSuccess) {
+    public TuitionResponseDto(StatusInfo statusInfo, boolean success) {
         this.coin = statusInfo.getCoin();
-        this.isSuccess = isSuccess;
+        this.success = success;
     }
 }
+

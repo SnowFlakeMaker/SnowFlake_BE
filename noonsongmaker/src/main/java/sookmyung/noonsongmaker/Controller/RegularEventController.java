@@ -71,14 +71,14 @@ public class RegularEventController {
     }
 
     // 등록금 대리납부
-    @PostMapping("/tuition/help")
+    @PatchMapping("/tuition/help")
     public ResponseEntity<Response<CoinAndStressResponseDto>> requestTuitionHelp(
             @CurrentUser User user,
             @RequestParam int parentSupport) {
         return ResponseEntity.ok(regularEventService.requestTuitionHelp(user.getId(), parentSupport));
     }
 
-    // 성적 장학금 지급 (유저 요청 시 실행)
+/*    // 성적 장학금 지급 (유저 요청 시 실행)
     @PostMapping("/merit")
     public ResponseEntity<Response<Map<String, CoinResponseDto>>> grantMeritScholarship(@CurrentUser User user) {
         CoinResponseDto updatedStats = regularEventService.grantMeritScholarship(user.getId());
@@ -87,7 +87,7 @@ public class RegularEventController {
         response.put("updated_coin", updatedStats);
 
         return ResponseEntity.ok(Response.buildResponse(response, "성적 장학금 지급 완료"));
-    }
+    }*/
 
     // 동아리 지원
     @PostMapping("/club")
@@ -98,9 +98,9 @@ public class RegularEventController {
 
     // 전공학회 지원
     @PostMapping("/conference")
-    public ResponseEntity<Response<String>> applyForMajorClub(@CurrentUser User user) {
-        regularEventService.applyForMajorClub(user.getId());
-        return ResponseEntity.ok(new Response<>("전공 학회 지원 완료", null));
+    public ResponseEntity<Response<Object>> applyForMajorClub(@CurrentUser User user) {
+        Response<Object> response = regularEventService.applyForMajorClub(user.getId());
+        return ResponseEntity.ok(response);
     }
 
     // 대외활동 지원
@@ -112,8 +112,8 @@ public class RegularEventController {
 
     // 리더십 그룹 지원
     @PostMapping("/leadership")
-    public ResponseEntity<Response<String>> applyForLeadershipGroup(@CurrentUser User user) {
-        Response<String> response = regularEventService.applyForLeadershipGroup(user.getId());
+    public ResponseEntity<Response<Object>> applyForLeadershipGroup(@CurrentUser User user) {
+        Response<Object> response = regularEventService.applyForLeadershipGroup(user.getId());
         return ResponseEntity.ok(response);
     }
 

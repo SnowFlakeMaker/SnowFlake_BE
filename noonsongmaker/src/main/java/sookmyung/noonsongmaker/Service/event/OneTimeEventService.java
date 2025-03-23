@@ -3,15 +3,16 @@ package sookmyung.noonsongmaker.Service.event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
+import sookmyung.noonsongmaker.Dto.event.ExchangeProgramResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
+import sookmyung.noonsongmaker.Exception.ActionRefusedException;
 import sookmyung.noonsongmaker.Repository.*;
 import sookmyung.noonsongmaker.Service.UserService;
 
 import java.util.*;
-
-import static sookmyung.noonsongmaker.Entity.Chapter.getNextChapter;
 
 @Service
 @RequiredArgsConstructor
@@ -54,10 +55,10 @@ public class OneTimeEventService {
 
         boolean isSelected = Math.random() < selectionProbability;
         if (!isSelected) {
-            return Response.buildResponse(null, "학생회 지원 불합격");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "학생회 지원 불합격");
         }
 
-        Plan studentCouncilPlan = planRepository.findByPlanName("학생회 활동")
+        Plan studentCouncilPlan = planRepository.findByPlanName("학생회")
                 .orElseThrow(() -> new IllegalArgumentException("학생회 활동 계획이 존재하지 않습니다."));
 
         PlanStatus planStatus = planStatusRepository.findByPlanAndUser(studentCouncilPlan, user)
@@ -81,7 +82,7 @@ public class OneTimeEventService {
         eventChapter.setIsActivated(false);
         eventChaptersRepository.save(eventChapter);
 
-        return Response.buildResponse(null, "학생회 지원 합격. 활동이 추가되었습니다.");
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "학생회 지원 합격. 활동이 추가되었습니다.");
     }
 
     // 졸업인증제
@@ -195,7 +196,7 @@ public class OneTimeEventService {
 
     // 교환학생 신청
     @Transactional
-    public Response<String> applyForExchangeStudent(Long userId) {
+    public Response<Object> applyForExchangeStudent(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -212,7 +213,7 @@ public class OneTimeEventService {
                 statusInfo.getIntelligence() < 70 ||
                 statusInfo.getGrit() < 70 ||
                 statusInfo.getSocial() < 70) {
-            throw new IllegalArgumentException("교환학생 신청 요건을 충족하지 못했습니다.");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "교환학생 신청 불합격");
         }
 
         float selectionProbability = event.getProbability() != null ? event.getProbability() : 0.8f;
@@ -234,12 +235,12 @@ public class OneTimeEventService {
         eventChapter.setIsActivated(false);
         eventChaptersRepository.save(eventChapter);
 
-        return Response.buildResponse(null, "교환학생 신청 합격. 다음 학기에 교환학생 진행 이벤트가 활성화됩니다.");
+        return Response.buildResponse(new CheckSuccessResponseDto(true), "교환학생 신청 합격. 다음 학기에 교환학생 진행 이벤트가 활성화됩니다.");
     }
 
     // 교환학생 진행
     @Transactional
-    public Response<StatsResponseDto> proceedExchangeStudent(Long userId) {
+    public Response<Object> proceedExchangeStudent(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -254,7 +255,7 @@ public class OneTimeEventService {
         }
 
         if (statusInfo.getCoin() < 600) {
-            throw new IllegalArgumentException("코인이 부족하여 교환학생을 진행할 수 없습니다.");
+            throw new ActionRefusedException("코인이 부족하여 교환학생을 진행할 수 없습니다.", new CheckSuccessResponseDto(false));
         }
         statusInfo.modifyStat("coin", -600);
 
@@ -272,7 +273,7 @@ public class OneTimeEventService {
         statusInfoRepository.save(statusInfo);
         userService.changeSemester(userId);
 
-        return Response.buildResponse(new StatsResponseDto(statusInfo), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+        return Response.buildResponse(new ExchangeProgramResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
     }
 
     // 학석사 연계과정 신청
