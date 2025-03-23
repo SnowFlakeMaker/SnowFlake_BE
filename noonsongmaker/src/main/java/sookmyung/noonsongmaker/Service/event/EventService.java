@@ -36,6 +36,7 @@ public class EventService {
         return eventChaptersRepository.findByUserAndIsActivatedTrue(user).stream()
                 .map(EventChapters::getEvent)
                 .filter(event -> !event.isRegular())
+                .filter(event -> event.getActivatedChapters().contains(user.getCurrentChapter()))
                 .map(Event::getName)
                 .collect(Collectors.toList());
     }
