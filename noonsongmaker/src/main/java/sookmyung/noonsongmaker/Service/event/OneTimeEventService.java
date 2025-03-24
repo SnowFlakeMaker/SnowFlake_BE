@@ -366,7 +366,7 @@ public class OneTimeEventService {
     }
 
     @Transactional
-    public Response<String> applyForInternship(Long userId) {
+    public Response<Object> applyForInternship(Long userId) {
         User user = getUser(userId);
 
         EventChapters eventChapter = validateEventParticipation("인턴 지원", user);
@@ -408,9 +408,9 @@ public class OneTimeEventService {
             planStatus.setRemainingSemesters(2);
             planStatusRepository.save(planStatus);*/
 
-            return Response.buildResponse(null, "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
+            return Response.buildResponse(new CheckSuccessResponseDto(true), "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
         } else {
-            return Response.buildResponse(null, "인턴 지원 불합격.");
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "인턴 지원 불합격.");
         }
     }
 

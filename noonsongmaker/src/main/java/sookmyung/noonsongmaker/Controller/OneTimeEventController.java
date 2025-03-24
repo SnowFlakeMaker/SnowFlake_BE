@@ -88,8 +88,8 @@ public class OneTimeEventController {
 
     // 인턴 지원
     @PostMapping("/internship")
-    public ResponseEntity<Response<String>> applyForIntern(@CurrentUser User user) {
-        Response<String> response = oneTimeEventService.applyForInternship(user.getId());
+    public ResponseEntity<Response<Object>> applyForIntern(@CurrentUser User user) {
+        Response<Object> response = oneTimeEventService.applyForInternship(user.getId());
         return ResponseEntity.ok(response);
     }
 }
