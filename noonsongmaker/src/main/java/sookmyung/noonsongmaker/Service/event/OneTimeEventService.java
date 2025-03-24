@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
-import sookmyung.noonsongmaker.Dto.event.ExchangeProgramResponseDto;
+import sookmyung.noonsongmaker.Dto.event.SuccessAndStatsResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Exception.ActionRefusedException;
@@ -320,7 +320,7 @@ public class OneTimeEventService {
         statusInfoRepository.save(statusInfo);
         userService.changeSemester(userId);
 
-        return Response.buildResponse(new ExchangeProgramResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+        return Response.buildResponse(new SuccessAndStatsResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
     }
 
     // 학석사 연계과정 신청
