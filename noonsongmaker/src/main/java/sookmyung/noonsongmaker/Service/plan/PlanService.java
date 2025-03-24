@@ -38,8 +38,10 @@ public class PlanService {
             // log.info("태스크 '{}' 실행 시도 중", task.getTaskName());
             Plan plan = planRepository.findByPlanName(task.getTaskName())
                     .orElseThrow(() -> new IllegalArgumentException("Plan not found: " + task.getTaskName()));
-            planCounts.merge(plan, 1, Integer::sum);
             PlanExecuteResponseDto result = applyPlanAndCollectResult(status, task.getTaskName(), plan);
+
+            if (!result.getTaskName().equals("코인부족"))
+                planCounts.merge(plan, 1, Integer::sum);
             response.add(result);
             // log.info("태스크 '{}' 실행 성공", task.getTaskName());
         }
@@ -109,6 +111,19 @@ public class PlanService {
     private PlanExecuteResponseDto applyPlanAndCollectResult(StatusInfo status, String taskName, Plan plan) {
         List<Effect> effects = effectRepository.findAllByPlan(plan);
         PlanExecuteResponseDto result = new PlanExecuteResponseDto(taskName);
+
+        Optional<Effect> coinEffect = effects.stream()
+                .filter(e -> e.getStatusName() == StatusName.COIN)
+                .findFirst();
+        if (coinEffect.isPresent()) {
+            Integer currentCoin = status.getCoin();
+            int updatedCoin = currentCoin + coinEffect.get().getChangeAmount();
+
+            if (updatedCoin < 0) {
+                result.closeIfNoCoin();
+                return result;
+            }
+        }
 
         for (Effect effect : effects) {
             applyEffect(status, effect);
