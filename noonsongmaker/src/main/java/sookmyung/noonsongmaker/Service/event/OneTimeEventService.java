@@ -366,6 +366,7 @@ public class OneTimeEventService {
         return Response.buildResponse(graduateEventChapter.getIsActivated(), "대학원생 시퀀스 진행 이벤트 활성 상태 조회 완료. true라면 진행해주세요.");
     }
 
+    // 인턴 지원
     @Transactional
     public Response<Object> applyForInternship(Long userId) {
         User user = getUser(userId);
@@ -379,6 +380,13 @@ public class OneTimeEventService {
         Plan coverLetterPlan = planRepository.findByPlanName("자소서 작성")
                 .orElseThrow(() -> new IllegalArgumentException("자소서 작성 계획이 존재하지 않습니다."));
 
+        // 인턴 합격 이벤트 활성화
+        Event internshipEvent = eventRepository.findByName("인턴 합격")
+                .orElseThrow(() -> new IllegalArgumentException("인턴 합격 이벤트가 존재하지 않습니다."));
+
+        EventChapters internshipEventChapter = eventChaptersRepository.findByEventAndUser(internshipEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+
         List<Schedule> schedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
                 user, Chapter.VAC_W_3, coverLetterPlan
         );
@@ -390,7 +398,6 @@ public class OneTimeEventService {
         // 인턴 합격 여부 판단
         boolean isAccepted = totalCount >= 5;
         eventChapter.setIsActivated(false);
-        eventChaptersRepository.save(eventChapter);
 
         if (isAccepted) {
 /*            Plan internPlan = planRepository.findByPlanName("인턴")
@@ -409,10 +416,28 @@ public class OneTimeEventService {
             planStatus.setRemainingSemesters(2);
             planStatusRepository.save(planStatus);*/
 
+            internshipEventChapter.setIsActivated(true);
+            eventChaptersRepository.save(eventChapter);
             return Response.buildResponse(new CheckSuccessResponseDto(true), "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
         } else {
+            internshipEventChapter.setIsActivated(false);
+            eventChaptersRepository.save(eventChapter);
             return Response.buildResponse(new CheckSuccessResponseDto(false), "인턴 지원 불합격.");
         }
+    }
+
+    // 인턴 합격 여부 확인
+    @Transactional(readOnly = true)
+    public Response<Boolean> isInternshipActive(Long userId) {
+        User user = getUser(userId);
+
+        Event internshipEvent = eventRepository.findByName("인턴 합격")
+                .orElseThrow(() -> new IllegalArgumentException("인턴 합격 이벤트가 존재하지 않습니다."));
+
+        EventChapters internshipEventChapter = eventChaptersRepository.findByEventAndUser(internshipEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+
+        return Response.buildResponse(internshipEventChapter.getIsActivated(), "인턴 합격 여부 조회 완료. true라면 진행해주세요.");
     }
 
     private User getUser(Long userId) {

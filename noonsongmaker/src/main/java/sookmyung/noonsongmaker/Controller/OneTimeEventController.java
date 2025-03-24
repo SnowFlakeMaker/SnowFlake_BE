@@ -92,4 +92,10 @@ public class OneTimeEventController {
         Response<Object> response = oneTimeEventService.applyForInternship(user.getId());
         return ResponseEntity.ok(response);
     }
+
+    // 인턴 합격 여부
+    @GetMapping("/internship/check")
+    public ResponseEntity<Response<Boolean>> isInternshipActive(@CurrentUser User user) {
+        return ResponseEntity.ok(oneTimeEventService.isInternshipActive(user.getId()));
+    }
 }
