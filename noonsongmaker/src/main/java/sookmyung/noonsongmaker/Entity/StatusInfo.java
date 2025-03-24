@@ -57,7 +57,7 @@ public class StatusInfo {
     private Integer globalAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("100")
+    @ColumnDefault("300")
     private Integer coin = 100;
 
     @Builder.Default
