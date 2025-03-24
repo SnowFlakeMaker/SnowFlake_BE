@@ -9,7 +9,6 @@ import sookmyung.noonsongmaker.Dto.main.PlayerInfoResponseDto;
 import sookmyung.noonsongmaker.Entity.StatusInfo;
 import sookmyung.noonsongmaker.Entity.User;
 import sookmyung.noonsongmaker.Entity.UserProfile;
-import sookmyung.noonsongmaker.Repository.EventRepository;
 import sookmyung.noonsongmaker.Repository.StatusInfoRepository;
 import sookmyung.noonsongmaker.Repository.UserProfileRepository;
 import sookmyung.noonsongmaker.Repository.UserRepository;
@@ -61,5 +60,4 @@ public class MainInfoService {
 
         return new StatusInfoResponse(statusInfo);
     }
-
 }

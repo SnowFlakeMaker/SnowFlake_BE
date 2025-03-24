@@ -60,7 +60,6 @@ public class StatusInfo {
     @ColumnDefault("100")
     private Integer coin = 100;
 
-
     @Builder.Default
     private boolean hasScholarship = false; // 국가장학금 신청 여부
 
@@ -69,8 +68,6 @@ public class StatusInfo {
 
     @Column(nullable = false)
     private boolean eligibleForMeritScholarship = false; // 성적 장학금 받을 자격 여부
-
-    private boolean isClubMember = false;
 
     // 국가장학금 신청 여부 등록
     public void applyScholarship() {
@@ -84,19 +81,8 @@ public class StatusInfo {
         this.eligibleForMeritScholarship = eligible;
     }
 
-    public void applyMeritScholarship(int amount) {
+    public void setScholarshipAmount(int amount) {
         this.scholarshipAmount = amount;
-        this.eligibleForMeritScholarship = false; // 장학금 지급 후 초기화
-    }
-
-    public void joinClub() {
-        this.isClubMember = true;
-    }
-
-    // 성적 장학금 초기화 (학기 변경 시 호출)
-    public void resetMeritScholarship() {
-        this.eligibleForMeritScholarship = false;
-        this.scholarshipAmount = 0;
     }
 
     /**
@@ -155,5 +141,5 @@ public class StatusInfo {
 
     public void updateGlobalAssess(int amount) { this.globalAssess = changeValueWithinBound(this.globalAssess, amount); }
 
-    public void updateCoin(int amount) { this.coin = Math.min(0, this.coin + amount); }
+    public void updateCoin(int amount) { this.coin = Math.max(0, this.coin + amount); }
 }

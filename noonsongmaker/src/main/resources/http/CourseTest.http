@@ -23,5 +23,9 @@ Content-Type: application/json
 Cookie:
 
 {
-  "디사의": true
+  "essential": 3,
+  "elective": 2,
+  "디사의": true,
+  "core1": 2,
+  "dmCredits": 2
 }

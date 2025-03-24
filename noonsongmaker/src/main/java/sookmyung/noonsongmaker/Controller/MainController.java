@@ -24,6 +24,7 @@ public class MainController {
     private final MainInfoService mainInfoService;
     private final UserService userService;
 
+    // 현재 챕터 조회
     @GetMapping("/chapter")
     public ResponseEntity<Response<Map<String, ChapterResponseDto>>> getCurrentChapter(@CurrentUser User user) {
         ChapterResponseDto chapterResponse = mainInfoService.getCurrentChapter(user.getId());
@@ -34,6 +35,7 @@ public class MainController {
         return ResponseEntity.ok(Response.buildResponse(response, "플레이어의 현재 학기 정보를 조회합니다."));
     }
 
+    // 플레이어 정보 조회
     @GetMapping("/player")
     public ResponseEntity<Response<Map<String, PlayerInfoResponseDto>>> getPlayerInfo(@CurrentUser User user) {
         PlayerInfoResponseDto playerInfo = mainInfoService.getPlayerInfo(user.getId());
@@ -44,13 +46,22 @@ public class MainController {
         return ResponseEntity.ok(Response.buildResponse(response, "플레이어 정보를 조회합니다."));
     }
 
+    // 학기 변경
     @PostMapping("/change-semester")
-    public ResponseEntity<Response<Void>> changeSemester(
-            @CurrentUser User user,
-            @RequestParam Chapter newChapter) {
+    public ResponseEntity<Response<ChapterResponseDto>> changeSemester(
+            @CurrentUser User user) {
 
-        userService.changeSemester(user.getId(), newChapter);
-        return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", null));
+        ChapterResponseDto response = userService.changeSemester(user.getId());
+        return ResponseEntity.ok(new Response<>("학기가 변경되었습니다.", response));
+    }
+
+    // 현재 스탯 조회
+    @GetMapping("/status")
+    public ResponseEntity<Response<StatusInfoResponse>> getStatus(@CurrentUser User user) {
+        StatusInfoResponse statusInfoResponse = mainInfoService.getStatusInfo(user.getId());
+        Response<StatusInfoResponse> response = Response.buildResponse(statusInfoResponse, "현재 스탯을 조회합니다.");
+
+        return ResponseEntity.ok(response);
     }
 
     // 현재 스탯 조회

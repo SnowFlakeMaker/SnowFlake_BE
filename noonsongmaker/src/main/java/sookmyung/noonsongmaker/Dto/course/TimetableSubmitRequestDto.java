@@ -7,8 +7,10 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TimetableSubmitRequestDto {
-    private Integer coreCredits;
-    private Integer electiveCredits;
+    private Integer essential;
+    private Integer elective;
+
+    private Integer dmCredits;
 
     @JsonProperty("디사의")
     private Boolean requiredDigital;
