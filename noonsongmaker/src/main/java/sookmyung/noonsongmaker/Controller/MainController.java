@@ -63,4 +63,13 @@ public class MainController {
 
         return ResponseEntity.ok(response);
     }
+
+    // 현재 스탯 조회
+    @GetMapping("/status")
+    public ResponseEntity<Response<StatusInfoResponse>> getStatus(@CurrentUser User user) {
+        StatusInfoResponse statusInfoResponse = mainInfoService.getStatusInfo(user.getId());
+        Response<StatusInfoResponse> response = Response.buildResponse(statusInfoResponse, "현재 스탯을 조회합니다.");
+
+        return ResponseEntity.ok(response);
+    }
 }
