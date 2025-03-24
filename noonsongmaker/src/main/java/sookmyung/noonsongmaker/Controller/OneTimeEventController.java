@@ -98,4 +98,11 @@ public class OneTimeEventController {
     public ResponseEntity<Response<Boolean>> isInternshipActive(@CurrentUser User user) {
         return ResponseEntity.ok(oneTimeEventService.isInternshipActive(user.getId()));
     }
+
+    // 공모전 지원
+    @PostMapping("/contest")
+    public ResponseEntity<Response<Object>> applyForContest(@CurrentUser User user) {
+        Response<Object> response = oneTimeEventService.applyForContest(user.getId());
+        return ResponseEntity.ok(response);
+    }
 }

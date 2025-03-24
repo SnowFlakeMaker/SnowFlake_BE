@@ -440,6 +440,36 @@ public class OneTimeEventService {
         return Response.buildResponse(internshipEventChapter.getIsActivated(), "인턴 합격 여부 조회 완료. true라면 진행해주세요.");
     }
 
+    // 공모전 지원
+    @Transactional
+    public Response<Object> applyForContest(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+
+        EventChapters eventChapter = validateEventParticipation("공모전 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("공모전 이벤트가 이미 완료되었거나 비활성화 상태입니다.");
+        }
+
+        boolean isContestSuccess = statusInfo.getIntelligence() >= 70;
+
+        if (isContestSuccess) {
+            statusInfo.modifyStat("coin", 30);
+            statusInfo.modifyStat("intelligence", 10);
+        } else {
+            statusInfo.modifyStat("intelligence", 5);
+        }
+
+        // 이벤트 비활성화 처리
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        statusInfoRepository.save(statusInfo);
+        return Response.buildResponse(new SuccessAndStatsResponseDto(isContestSuccess, new StatsResponseDto(statusInfo)),
+                isContestSuccess ? "공모전 수상 성공! 상금이 지급되었습니다. 지력 +10" : "공모전 수상에는 실패했지만 경험이 되었습니다. 지력 +5");
+    }
+
     private User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
