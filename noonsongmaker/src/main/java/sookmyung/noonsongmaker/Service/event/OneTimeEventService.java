@@ -305,6 +305,7 @@ public class OneTimeEventService {
             throw new ActionRefusedException("코인이 부족하여 교환학생을 진행할 수 없습니다.", new CheckSuccessResponseDto(false));
         }
         statusInfo.modifyStat("coin", -600);
+        statusInfo.updateGlobalAssess(50); // 스페셜 해외 엔딩 준비
 
         course.updateElectiveCredits(9);
         courseRepository.save(course);

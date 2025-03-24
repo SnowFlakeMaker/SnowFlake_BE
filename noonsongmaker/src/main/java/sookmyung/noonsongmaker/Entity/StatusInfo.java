@@ -111,8 +111,6 @@ public class StatusInfo {
         }
     }
 
-    // TODO stress 제외, 값 업뎃 시 음수이면 0으로 설정하는 예외 처리 로직 구현
-
     private Integer changeValueWithinBound(Integer status, int amount) {
         return Math.max(0, Math.min(150, status + amount));
     }

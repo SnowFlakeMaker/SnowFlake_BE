@@ -80,6 +80,7 @@ public class EndingService {
         if (statusInfo.getHobbyAssess() >= SPECIAL) assessMap.put("취미 엔딩", statusInfo.getHobbyAssess());
         if (statusInfo.getWorkAssess() >= SPECIAL) assessMap.put("알바 엔딩", statusInfo.getWorkAssess());
         if (statusInfo.getServiceAssess() >= SPECIAL) assessMap.put("봉사 엔딩", statusInfo.getServiceAssess());
+        if (statusInfo.getGlobalAssess() >= SPECIAL) assessMap.put("해외 엔딩", statusInfo.getGlobalAssess());
 
         return assessMap.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
