@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Getter
 public class PlanExecuteResponseDto {
-    private final String taskName;
+    private String taskName;
     private final Map<StatusName, Integer> effects;
 
     public PlanExecuteResponseDto(String taskName) {
@@ -19,5 +19,9 @@ public class PlanExecuteResponseDto {
 
     public void addEffect(StatusName statusName, int changeAmount) {
         effects.put(statusName, changeAmount);
+    }
+
+    public void closeIfNoCoin() {
+        this.taskName = "코인부족";
     }
 }
