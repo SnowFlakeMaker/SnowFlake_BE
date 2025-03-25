@@ -1,6 +1,7 @@
 package sookmyung.noonsongmaker.Service.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
@@ -14,6 +15,7 @@ import sookmyung.noonsongmaker.Service.UserService;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OneTimeEventService {
@@ -301,9 +303,6 @@ public class OneTimeEventService {
             throw new IllegalArgumentException("교환학생 진행이 비활성화되어 있습니다.");
         }
 
-        if (statusInfo.getCoin() < 600) {
-            throw new ActionRefusedException("코인이 부족하여 교환학생을 진행할 수 없습니다.", new CheckSuccessResponseDto(false));
-        }
         statusInfo.modifyStat("coin", -600);
         statusInfo.updateGlobalAssess(50); // 스페셜 해외 엔딩 준비
 
@@ -322,6 +321,21 @@ public class OneTimeEventService {
         userService.changeSemester(userId);
 
         return Response.buildResponse(new SuccessAndStatsResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+    }
+
+    // 교환학생 진행여부 확인 및 비활성화
+    @Transactional
+    public Response<Object> checkAndDeactivateExchangeEventIfBlocked(User user) {
+        StatusInfo statusInfo = getUserStatus(user);
+        EventChapters exchangeEvent = validateEventParticipation("교환학생 진행", user);
+
+        if (statusInfo.getCoin() < 600) {
+            exchangeEvent.setIsActivated(false);
+            eventChaptersRepository.save(exchangeEvent);
+            return Response.buildResponse(new CheckSuccessResponseDto(exchangeEvent.getIsActivated()), "코인이 부족하여 교환학생을 진행할 수 없습니다");
+        }
+
+        return Response.buildResponse(new CheckSuccessResponseDto(exchangeEvent.getIsActivated()), "true라면 교환학생 이벤트를 진행해주세요.");
     }
 
     // 학석사 연계과정 신청

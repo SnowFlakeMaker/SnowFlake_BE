@@ -74,6 +74,13 @@ public class OneTimeEventController {
         return ResponseEntity.ok(response);
     }
 
+    // 교환학생 진행여부 확인
+    @PostMapping("/exchange/validate")
+    public ResponseEntity<Response<Object>> getExchangeStatus(@CurrentUser User user) {
+        Response<Object> response =  oneTimeEventService.checkAndDeactivateExchangeEventIfBlocked(user);
+        return ResponseEntity.ok(response);
+    }
+
     // 학석사 연계과정 신청
     @PostMapping("/combined-programs")
     public ResponseEntity<Response<String>> applyForGraduateIntegrated(@CurrentUser User user) {

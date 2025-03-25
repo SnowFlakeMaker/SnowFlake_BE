@@ -106,7 +106,7 @@ public class RegularEventService {
     public Response<TuitionResponseDto> payTuition(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
-        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
+        EventChapters eventChapter = getEventChapter("성적장학금", user);
 
         boolean hasNationalScholarship = statusInfo.isHasScholarship();
         int meritScholarshipAmount = statusInfo.getScholarshipAmount();
@@ -157,7 +157,7 @@ public class RegularEventService {
 
         int remainingAmount = tuitionFee - statusInfo.getCoin(); // 최소 필요 금액
 
-        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
+        EventChapters eventChapter = getEventChapter("성적장학금", user);
 
         if (parentSupport < remainingAmount || parentSupport > tuitionFee) {
             throw new IllegalArgumentException("대리납부 가능한 범위는 " + remainingAmount + " ~ " + tuitionFee + " 코인 사이여야 합니다.");
