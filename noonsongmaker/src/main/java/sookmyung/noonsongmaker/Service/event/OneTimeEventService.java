@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
-import sookmyung.noonsongmaker.Dto.event.ExchangeProgramResponseDto;
+import sookmyung.noonsongmaker.Dto.event.SuccessAndStatsResponseDto;
 import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Exception.ActionRefusedException;
@@ -305,6 +305,7 @@ public class OneTimeEventService {
             throw new ActionRefusedException("코인이 부족하여 교환학생을 진행할 수 없습니다.", new CheckSuccessResponseDto(false));
         }
         statusInfo.modifyStat("coin", -600);
+        statusInfo.updateGlobalAssess(50); // 스페셜 해외 엔딩 준비
 
         course.updateElectiveCredits(9);
         courseRepository.save(course);
@@ -320,7 +321,7 @@ public class OneTimeEventService {
         statusInfoRepository.save(statusInfo);
         userService.changeSemester(userId);
 
-        return Response.buildResponse(new ExchangeProgramResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
+        return Response.buildResponse(new SuccessAndStatsResponseDto(true ,new StatsResponseDto(statusInfo)), "교환학생을 성공적으로 진행했습니다. 학기가 변경됩니다.");
     }
 
     // 학석사 연계과정 신청
@@ -365,8 +366,9 @@ public class OneTimeEventService {
         return Response.buildResponse(graduateEventChapter.getIsActivated(), "대학원생 시퀀스 진행 이벤트 활성 상태 조회 완료. true라면 진행해주세요.");
     }
 
+    // 인턴 지원
     @Transactional
-    public Response<String> applyForInternship(Long userId) {
+    public Response<Object> applyForInternship(Long userId) {
         User user = getUser(userId);
 
         EventChapters eventChapter = validateEventParticipation("인턴 지원", user);
@@ -377,6 +379,13 @@ public class OneTimeEventService {
 
         Plan coverLetterPlan = planRepository.findByPlanName("자소서 작성")
                 .orElseThrow(() -> new IllegalArgumentException("자소서 작성 계획이 존재하지 않습니다."));
+
+        // 인턴 합격 이벤트 활성화
+        Event internshipEvent = eventRepository.findByName("인턴 합격")
+                .orElseThrow(() -> new IllegalArgumentException("인턴 합격 이벤트가 존재하지 않습니다."));
+
+        EventChapters internshipEventChapter = eventChaptersRepository.findByEventAndUser(internshipEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
 
         List<Schedule> schedules = scheduleRepository.findByUserAndCurrentChapterAndPlan(
                 user, Chapter.VAC_W_3, coverLetterPlan
@@ -389,7 +398,6 @@ public class OneTimeEventService {
         // 인턴 합격 여부 판단
         boolean isAccepted = totalCount >= 5;
         eventChapter.setIsActivated(false);
-        eventChaptersRepository.save(eventChapter);
 
         if (isAccepted) {
 /*            Plan internPlan = planRepository.findByPlanName("인턴")
@@ -408,10 +416,58 @@ public class OneTimeEventService {
             planStatus.setRemainingSemesters(2);
             planStatusRepository.save(planStatus);*/
 
-            return Response.buildResponse(null, "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
+            internshipEventChapter.setIsActivated(true);
+            eventChaptersRepository.save(eventChapter);
+            return Response.buildResponse(new CheckSuccessResponseDto(true), "인턴 지원 합격! 다음 학기에 인턴 활동이 추가됩니다.");
         } else {
-            return Response.buildResponse(null, "인턴 지원 불합격.");
+            internshipEventChapter.setIsActivated(false);
+            eventChaptersRepository.save(eventChapter);
+            return Response.buildResponse(new CheckSuccessResponseDto(false), "인턴 지원 불합격.");
         }
+    }
+
+    // 인턴 합격 여부 확인
+    @Transactional(readOnly = true)
+    public Response<Boolean> isInternshipActive(Long userId) {
+        User user = getUser(userId);
+
+        Event internshipEvent = eventRepository.findByName("인턴 합격")
+                .orElseThrow(() -> new IllegalArgumentException("인턴 합격 이벤트가 존재하지 않습니다."));
+
+        EventChapters internshipEventChapter = eventChaptersRepository.findByEventAndUser(internshipEvent, user)
+                .orElseThrow(() -> new IllegalArgumentException("이벤트 진행 기록을 찾을 수 없습니다."));
+
+        return Response.buildResponse(internshipEventChapter.getIsActivated(), "인턴 합격 여부 조회 완료. true라면 진행해주세요.");
+    }
+
+    // 공모전 지원
+    @Transactional
+    public Response<Object> applyForContest(Long userId) {
+        User user = getUser(userId);
+        StatusInfo statusInfo = getUserStatus(user);
+
+        EventChapters eventChapter = validateEventParticipation("공모전 지원", user);
+
+        if (!eventChapter.getIsActivated()) {
+            throw new IllegalArgumentException("공모전 이벤트가 이미 완료되었거나 비활성화 상태입니다.");
+        }
+
+        boolean isContestSuccess = statusInfo.getIntelligence() >= 70;
+
+        if (isContestSuccess) {
+            statusInfo.modifyStat("coin", 30);
+            statusInfo.modifyStat("intelligence", 10);
+        } else {
+            statusInfo.modifyStat("intelligence", 5);
+        }
+
+        // 이벤트 비활성화 처리
+        eventChapter.setIsActivated(false);
+        eventChaptersRepository.save(eventChapter);
+
+        statusInfoRepository.save(statusInfo);
+        return Response.buildResponse(new SuccessAndStatsResponseDto(isContestSuccess, new StatsResponseDto(statusInfo)),
+                isContestSuccess ? "공모전 수상 성공! 상금이 지급되었습니다. 지력 +10" : "공모전 수상에는 실패했지만 경험이 되었습니다. 지력 +5");
     }
 
     private User getUser(Long userId) {

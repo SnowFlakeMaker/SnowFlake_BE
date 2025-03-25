@@ -83,7 +83,9 @@ public class IntroService {
             boolean isInitiallyActivated = !event.getName().equals("교환학생 진행")
                     && !event.getName().equals("성적장학금")
                     && !event.getName().equals("학석사 연계과정 신청")
-                    && !event.getName().equals("대학원생 시퀀스 진행");
+                    && !event.getName().equals("대학원생 시퀀스 진행")
+                    && !event.getName().equals("인턴 합격");
+
 
             EventChapters eventChapter = EventChapters.builder()
                     .event(event)
