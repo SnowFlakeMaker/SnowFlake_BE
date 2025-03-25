@@ -26,7 +26,6 @@ public class EventService {
                 .filter(Event::isRegular)
                 .filter(event -> event.getActivatedChapters().contains(user.getCurrentChapter()))
                 .filter(event -> !"등록금 대리납부".equals(event.getName()))
-                .filter(event -> !"교환학생 진행".equals(event.getName()))
                 .map(Event::getName)
                 .collect(Collectors.toList());
     }
@@ -36,6 +35,7 @@ public class EventService {
                 .map(EventChapters::getEvent)
                 .filter(event -> !event.isRegular())
                 .filter(event -> event.getActivatedChapters().contains(user.getCurrentChapter()))
+                .filter(event -> !"교환학생 진행".equals(event.getName()))
                 .map(Event::getName)
                 .collect(Collectors.toList());
     }

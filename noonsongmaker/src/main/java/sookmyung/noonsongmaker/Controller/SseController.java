@@ -41,4 +41,16 @@ public class SseController {
                 .body(emitter);
 
     }
+
+    @GetMapping("/regular")
+    public ResponseEntity<Void> replayRegularEvents(@CurrentUser User user) {
+        sseService.sendRegularEventsList(user);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/onetime")
+    public ResponseEntity<Void> replayOneTimeEvents(@CurrentUser User user) {
+        sseService.sendOneTimeEventList(user);
+        return ResponseEntity.ok().build();
+    }
 }
