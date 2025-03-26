@@ -2,8 +2,6 @@ package sookmyung.noonsongmaker.Service.plan;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteRequestDto;
 import sookmyung.noonsongmaker.Dto.plan.PlanExecuteResponseDto;
@@ -17,7 +15,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class PlanService {
-    private final Logger log = LoggerFactory.getLogger(PlanService.class);
     private final StatusInfoRepository statusInfoRepository;
     private final PlanRepository planRepository;
     private final PlanStatusRepository planStatusRepository;
@@ -126,20 +123,21 @@ public class PlanService {
         }
 
         for (Effect effect : effects) {
-            applyEffect(status, effect);
+            applyEffect(status, effect, plan);
             result.addEffect(effect.getStatusName(), effect.getChangeAmount());
         }
 
         return result;
     }
 
-    private void applyEffect(StatusInfo status, Effect effect) {
+    private void applyEffect(StatusInfo status, Effect effect, Plan plan) {
         if (effect.getStatusName() == StatusName.STRESS) {
             int currentStress = status.getStress();
             int updatedStress = currentStress + effect.getChangeAmount();
 
             if (updatedStress >= 100) {
                 // log.error(실행 중 스트레스 100 도달로 중단됨");
+                if (plan.getPlanName().equals("인턴")) status.updateStressWhenExp(60);
                 throw new StressOverflowException();
             }
         }
