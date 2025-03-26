@@ -61,6 +61,7 @@ public class IntroService {
                 .user(user)
                 .coreCredits(0)
                 .electiveCredits(0)
+                .dmCredits(0)
                 .requiredDigital(false)
                 .requiredFuture(false)
                 .requiredEng(false)
