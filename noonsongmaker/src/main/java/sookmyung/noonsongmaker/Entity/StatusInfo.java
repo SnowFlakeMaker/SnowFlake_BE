@@ -57,8 +57,8 @@ public class StatusInfo {
     private Integer globalAssess = 0;
 
     @Builder.Default
-    @ColumnDefault("300")
-    private Integer coin = 100;
+    @ColumnDefault("500")
+    private Integer coin = 500;
 
     @Builder.Default
     private boolean hasScholarship = false; // 국가장학금 신청 여부
@@ -140,4 +140,6 @@ public class StatusInfo {
     public void updateGlobalAssess(int amount) { this.globalAssess = changeValueWithinBound(this.globalAssess, amount); }
 
     public void updateCoin(int amount) { this.coin = Math.max(0, this.coin + amount); }
+
+    public void updateStressWhenExp(int amount) { this.stress = amount; }
 }

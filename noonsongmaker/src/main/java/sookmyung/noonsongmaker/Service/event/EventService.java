@@ -35,6 +35,7 @@ public class EventService {
                 .map(EventChapters::getEvent)
                 .filter(event -> !event.isRegular())
                 .filter(event -> event.getActivatedChapters().contains(user.getCurrentChapter()))
+                .filter(event -> !"교환학생 진행".equals(event.getName()))
                 .map(Event::getName)
                 .collect(Collectors.toList());
     }

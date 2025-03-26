@@ -35,7 +35,7 @@ public class SseEmitterRegistry {
         emitters.remove(userId);
     }
 
-    public Collection<SseEmitter> getAllEmitters() {
-        return emitters.values();
+    public Map<Long, SseEmitter> getAllEmittersWithIds() {
+        return emitters;
     }
 }

@@ -25,6 +25,8 @@ public class IntroService {
     private final CourseRepository courseRepository;
     private final EventRepository eventRepository;
     private final EventChaptersRepository eventChaptersRepository;
+    private final PlanRepository planRepository;
+    private final PlanStatusRepository planStatusRepository;
 
     @Transactional
     public Pair<UserProfile, StatusInfo> createUserProfile(UserProfileRequest request) {
@@ -34,7 +36,7 @@ public class IntroService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
         if (user.getCurrentChapter() == null) {
-            user.setCurrentChapter(Chapter.SEM_S_1);
+            user.setCurrentChapter(Chapter.NEWBIE);
             userRepository.save(user); // 변경사항 저장
         }
 
@@ -59,6 +61,7 @@ public class IntroService {
                 .user(user)
                 .coreCredits(0)
                 .electiveCredits(0)
+                .dmCredits(0)
                 .requiredDigital(false)
                 .requiredFuture(false)
                 .requiredEng(false)
@@ -96,6 +99,18 @@ public class IntroService {
         }
 
         eventChaptersRepository.saveAll(eventChaptersList);
+
+        // 자소서 작성에 대한 planstatus 초기화
+        Plan resumePlan = planRepository.findByPlanName("자소서 작성")
+                .orElseThrow(() -> new IllegalArgumentException("자소서 작성 Plan이 존재하지 않습니다."));
+
+        PlanStatus resumePlanStatus = PlanStatus.builder()
+                .user(user)
+                .plan(resumePlan)
+                .isActivated(false) // 처음에는 비활성화
+                .remainingSemesters(16)
+                .build();
+        planStatusRepository.save(resumePlanStatus);
 
 
         return Pair.of(userProfile, statusInfo);

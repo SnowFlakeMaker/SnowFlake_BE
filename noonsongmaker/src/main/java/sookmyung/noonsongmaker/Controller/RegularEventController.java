@@ -78,7 +78,7 @@ public class RegularEventController {
     }
 
     // 등록금 대리납부
-    @PatchMapping("/tuition/help")
+    @PostMapping("/tuition/help")
     public ResponseEntity<Response<CoinAndStressResponseDto>> requestTuitionHelp(
             @CurrentUser User user,
             @RequestParam int parentSupport) {
