@@ -58,7 +58,7 @@ public class StatusInfo {
 
     @Builder.Default
     @ColumnDefault("300")
-    private Integer coin = 100;
+    private Integer coin = 300;
 
     @Builder.Default
     private boolean hasScholarship = false; // 국가장학금 신청 여부
