@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import sookmyung.noonsongmaker.Dto.sse.SseEventType;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +21,9 @@ public class SseHeartbeatScheduler {
     @Scheduled(fixedRate = 10000)
     public void sendHeartbeats() {
         //log.info("Heartbeat scheduler triggered. Total emitters: {}", emitterRegistry.getAllEmitters().size());
-        for (SseEmitter emitter : emitterRegistry.getAllEmitters()) {
+        for (Map.Entry<Long, SseEmitter> entry : emitterRegistry.getAllEmittersWithIds().entrySet()) {
+            Long userId = entry.getKey();
+            SseEmitter emitter = entry.getValue();
             //log.info("Sending heartbeat to an emitter...");
             try {
                 emitter.send(SseEmitter.event().
@@ -28,6 +31,7 @@ public class SseHeartbeatScheduler {
                         .data("ping"));
             } catch (IOException e) {
                 emitter.complete();
+                emitterRegistry.remove(userId);
                 //log.warn("Emitter failed during heartbeat and was completed due to: {}", e.getMessage());
             }
         }
