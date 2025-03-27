@@ -105,9 +105,9 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
                 .httpOnly(true)
-                .secure(false) // Set to true in production
+                .secure(true) // Set to true in production
                 .maxAge(Duration.ofSeconds(maxAgeSeconds))
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
