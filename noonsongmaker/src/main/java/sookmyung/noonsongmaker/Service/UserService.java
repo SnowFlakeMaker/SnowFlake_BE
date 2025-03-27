@@ -23,6 +23,7 @@ public class UserService {
     private final EventRepository eventRepository;
     private final EventChaptersRepository eventChaptersRepository;
     private final SseService sseService;
+    private final UserProfileRepository userProfileRepository;
 
 
     // 학기 변경
@@ -30,12 +31,17 @@ public class UserService {
     public ChapterResponseDto changeSemester(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
+        UserProfile userProfile = getUserProfile(user);
+        MajorType majorType = userProfile.getMajorType();
 
         Chapter nextChapter = Chapter.getNextChapter(user.getCurrentChapter());
         if (nextChapter == null) {
             throw new IllegalStateException("마지막 학기 이후에는 더 이상 학기를 변경할 수 없습니다.");
         }
 
+        if(nextChapter == Chapter.SEM_W_3 && majorType == MajorType.UNKNOWN){
+            userProfile.setMajorType(MajorType.ADVANCED_MAJOR);
+        }
 
         // 현재 학기에 맞게 계획을 활성화/비활성화
         List<PlanStatus> userPlanStatuses = planStatusRepository.findByUser(user);
@@ -104,6 +110,11 @@ public class UserService {
     public StatusInfo getUserStatus(User user) {
         return statusInfoRepository.findByUser(user)
                 .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+    }
+
+    public UserProfile getUserProfile(User user) {
+        return userProfileRepository.findByUser(user)
+                .orElseThrow(() -> new NoSuchElementException("유저 프로필 정보가 존재하지 않습니다."));
     }
 
     public User getUser(Long userId) {

@@ -79,7 +79,7 @@ public class PlanService {
                         status.updateHobbyAssess(status.getHobbyAssess() + 4);
                     }
                     break;
-                case "알바":
+                case "아르바이트":
                     if (ratio >= 0.4) {
                         status.updateWorkAssess(status.getWorkAssess() + 4);
                     }

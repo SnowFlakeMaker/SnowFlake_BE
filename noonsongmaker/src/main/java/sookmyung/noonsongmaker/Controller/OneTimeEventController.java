@@ -74,6 +74,13 @@ public class OneTimeEventController {
         return ResponseEntity.ok(response);
     }
 
+    // 교환학생 진행여부 확인
+    @PostMapping("/exchange/validate")
+    public ResponseEntity<Response<Object>> getExchangeStatus(@CurrentUser User user) {
+        Response<Object> response =  oneTimeEventService.checkAndDeactivateExchangeEventIfBlocked(user);
+        return ResponseEntity.ok(response);
+    }
+
     // 학석사 연계과정 신청
     @PostMapping("/combined-programs")
     public ResponseEntity<Response<String>> applyForGraduateIntegrated(@CurrentUser User user) {
@@ -88,8 +95,21 @@ public class OneTimeEventController {
 
     // 인턴 지원
     @PostMapping("/internship")
-    public ResponseEntity<Response<String>> applyForIntern(@CurrentUser User user) {
-        Response<String> response = oneTimeEventService.applyForInternship(user.getId());
+    public ResponseEntity<Response<Object>> applyForIntern(@CurrentUser User user) {
+        Response<Object> response = oneTimeEventService.applyForInternship(user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    // 인턴 합격 여부
+    @GetMapping("/internship/check")
+    public ResponseEntity<Response<Boolean>> isInternshipActive(@CurrentUser User user) {
+        return ResponseEntity.ok(oneTimeEventService.isInternshipActive(user.getId()));
+    }
+
+    // 공모전 지원
+    @PostMapping("/contest")
+    public ResponseEntity<Response<Object>> applyForContest(@CurrentUser User user) {
+        Response<Object> response = oneTimeEventService.applyForContest(user.getId());
         return ResponseEntity.ok(response);
     }
 }

@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sookmyung.noonsongmaker.Dto.CheckSuccessResponseDto;
 import sookmyung.noonsongmaker.Dto.Response;
-import sookmyung.noonsongmaker.Dto.event.CoinAndStressResponseDto;
-import sookmyung.noonsongmaker.Dto.event.CoinResponseDto;
-import sookmyung.noonsongmaker.Dto.event.StatsResponseDto;
-import sookmyung.noonsongmaker.Dto.event.TuitionResponseDto;
+import sookmyung.noonsongmaker.Dto.event.*;
 import sookmyung.noonsongmaker.Entity.*;
 import sookmyung.noonsongmaker.Exception.ActionRefusedException;
 import sookmyung.noonsongmaker.Repository.*;
@@ -82,7 +79,7 @@ public class RegularEventService {
 
     // 축제
     @Transactional
-    public StatsResponseDto attendFestival(Long userId) {
+    public Response<Object> attendFestival(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
 
@@ -93,7 +90,7 @@ public class RegularEventService {
         }
 
         if (statusInfo.getCoin() < 5) {
-            throw new IllegalArgumentException("코인이 부족하여 축제에 참석할 수 없습니다. 현재 보유 코인: " + statusInfo.getCoin());
+            throw new ActionRefusedException("코인이 부족하여 축제에 참석할 수 없습니다. 현재 보유 코인: " + statusInfo.getCoin(), new CheckSuccessResponseDto(false));
         }
 
         statusInfo.modifyStat("social", 5);
@@ -101,7 +98,7 @@ public class RegularEventService {
         statusInfo.modifyStat("coin", -5);
 
         statusInfoRepository.save(statusInfo);
-        return new StatsResponseDto(statusInfo);
+        return Response.buildResponse(new SuccessAndStatsResponseDto(true ,new StatsResponseDto(statusInfo)), "축제 참석 완료, 스탯이 업데이트 되었습니다.");
     }
 
     // 등록금 납부
@@ -109,7 +106,7 @@ public class RegularEventService {
     public Response<TuitionResponseDto> payTuition(Long userId) {
         User user = getUser(userId);
         StatusInfo statusInfo = getUserStatus(user);
-        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
+        EventChapters eventChapter = getEventChapter("성적장학금", user);
 
         boolean hasNationalScholarship = statusInfo.isHasScholarship();
         int meritScholarshipAmount = statusInfo.getScholarshipAmount();
@@ -160,7 +157,7 @@ public class RegularEventService {
 
         int remainingAmount = tuitionFee - statusInfo.getCoin(); // 최소 필요 금액
 
-        EventChapters eventChapter = validateEventParticipation("성적장학금", user);
+        EventChapters eventChapter = getEventChapter("성적장학금", user);
 
         if (parentSupport < remainingAmount || parentSupport > tuitionFee) {
             throw new IllegalArgumentException("대리납부 가능한 범위는 " + remainingAmount + " ~ " + tuitionFee + " 코인 사이여야 합니다.");

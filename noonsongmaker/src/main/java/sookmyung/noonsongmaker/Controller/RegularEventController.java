@@ -57,13 +57,10 @@ public class RegularEventController {
 
     // 축제
     @PostMapping("/festival")
-    public ResponseEntity<Response<Map<String, StatsResponseDto>>> attendFestival(@CurrentUser User user) {
-        StatsResponseDto updatedStats = regularEventService.attendFestival(user.getId());
+    public ResponseEntity<Response<Object>> attendFestival(@CurrentUser User user) {
+        Response<Object> response = regularEventService.attendFestival(user.getId());
 
-        Map<String, StatsResponseDto> response = new HashMap<>();
-        response.put("updated_stats", updatedStats);
-
-        return ResponseEntity.ok(Response.buildResponse(response, "축제 참석 완료, 스탯이 업데이트 되었습니다."));
+        return ResponseEntity.ok(response);
     }
 
     // 등록금 납부
@@ -81,7 +78,7 @@ public class RegularEventController {
     }
 
     // 등록금 대리납부
-    @PatchMapping("/tuition/help")
+    @PostMapping("/tuition/help")
     public ResponseEntity<Response<CoinAndStressResponseDto>> requestTuitionHelp(
             @CurrentUser User user,
             @RequestParam int parentSupport) {

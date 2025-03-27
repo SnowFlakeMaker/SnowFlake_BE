@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import sookmyung.noonsongmaker.Dto.Response;
 import sookmyung.noonsongmaker.Dto.ending.EndingResponseDto;
 import sookmyung.noonsongmaker.Entity.User;
+import sookmyung.noonsongmaker.Service.UserService;
 import sookmyung.noonsongmaker.Service.sse.SseService;
 import sookmyung.noonsongmaker.jwt.CurrentUser;
 
@@ -23,6 +24,7 @@ import java.io.IOException;
 public class SseController {
 
     private final SseService sseService;
+    private final UserService userService;
 
     @GetMapping(value = "/get-userid")
     public ResponseEntity<Response<Long>> getUserId(@CurrentUser User user) {
@@ -40,5 +42,19 @@ public class SseController {
                 .header("X-Accel-Buffering", "no")
                 .body(emitter);
 
+    }
+
+    @GetMapping("/regular/{userId}")
+    public ResponseEntity<Void> replayRegularEvents(@PathVariable("userId") Long userId) {
+        User user = userService.getUser(userId);
+        sseService.sendRegularEventsList(user);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/onetime/{userId}")
+    public ResponseEntity<Void> replayOneTimeEvents(@PathVariable("userId") Long userId) {
+        User user = userService.getUser(userId);
+        sseService.sendOneTimeEventList(user);
+        return ResponseEntity.ok().build();
     }
 }
