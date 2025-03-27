@@ -89,7 +89,6 @@ public class PlanService {
                         status.updateServiceAssess(status.getServiceAssess() + 4);
                     }
                     break;
-                // TODO 외국어 평가 관련 재논의 필요
             }
         }
     }

@@ -142,7 +142,6 @@ public class EndingService {
     }
 
     private String getNormalEnding(StatusInfo statusInfo) {
-        // TODO 모든 스탯이 21~50 사이의 값이거나, 한 스탯은 21~50 사이의 값이고 나머지 스탯은 11~20 사이의 값이라면..???
         if (isEveryStatsUnderTwenty(statusInfo)) {
             return "꿈 엔딩";
         }

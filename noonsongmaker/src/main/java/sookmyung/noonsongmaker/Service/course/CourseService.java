@@ -181,6 +181,5 @@ public class CourseService {
         return TimetableSubmitResponseDto.builder()
                 .updateResults(results)
                 .build();
-        // TODO 시간표 저장 : 장학금 코드에서 시간표 데이터 어떻게 받는지 확인 필요, 저장할 필요 없으면 미구현할 것
     }
 }
