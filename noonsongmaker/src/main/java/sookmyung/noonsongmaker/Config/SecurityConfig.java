@@ -3,6 +3,7 @@ package sookmyung.noonsongmaker.Config;
 import jakarta.servlet.Filter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,6 +25,7 @@ import sookmyung.noonsongmaker.jwt.JwtProvider;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -47,6 +49,7 @@ public class SecurityConfig {
                         .requireExplicitSave(false)  // SecurityContext 자동 저장 활성화
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/logout", "/auth/login", "/auth/signup", "/auth/verify-code", "/auth/send-email","/intro/info-new", "/auth/refresh", "/sse/subscribe/{userId}").permitAll()
 
                         .anyRequest().authenticated()
@@ -80,7 +83,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true); // 인증 정보 포함할 경우 true
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:8080", "http://52.79.237.120:8080", "https://snowflakemaker.netlify.app")); // 프론트엔드 주소
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:8080", "http://52.79.237.120:8080", "https://snowflakemaker.netlify.app", "https://nsmaker.o-r.kr")); // 프론트엔드 주소
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setExposedHeaders(List.of("Content-Type"));
