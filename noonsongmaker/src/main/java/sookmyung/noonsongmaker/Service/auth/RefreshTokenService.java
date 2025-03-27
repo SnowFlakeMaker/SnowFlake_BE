@@ -1,7 +1,6 @@
 package sookmyung.noonsongmaker.Service.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import sookmyung.noonsongmaker.jwt.JwtProvider;
