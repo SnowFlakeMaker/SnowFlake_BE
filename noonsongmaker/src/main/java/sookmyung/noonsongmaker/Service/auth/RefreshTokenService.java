@@ -21,7 +21,7 @@ public class RefreshTokenService {
     public boolean validateRefreshToken(String email, String refreshToken) {
         String storedRefreshToken = stringRedisTemplate.opsForValue().get(email);
         String blacklist = stringRedisTemplate.opsForValue().get(BLACKLIST_PREFIX + refreshToken);
-        return storedRefreshToken != null && storedRefreshToken.equals(refreshToken) && blacklist == null;
+        return storedRefreshToken != null && storedRefreshToken.equals(refreshToken);
     }
 
     public void invalidateRefreshToken(String email, String refreshToken) {

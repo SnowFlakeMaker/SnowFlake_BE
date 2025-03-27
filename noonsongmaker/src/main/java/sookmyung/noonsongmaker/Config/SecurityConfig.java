@@ -19,10 +19,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import sookmyung.noonsongmaker.Repository.UserRepository;
 import sookmyung.noonsongmaker.jwt.JwtAuthorizeFilter;
 import sookmyung.noonsongmaker.jwt.JwtProvider;
-
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -91,5 +94,22 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+
+
+    @Bean
+    public WebMvcConfigurer mvcCorsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOriginPatterns("https://snowflakemaker.netlify.app")
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Content-Type")
+                        .allowCredentials(true);
+            }
+        };
     }
 }
