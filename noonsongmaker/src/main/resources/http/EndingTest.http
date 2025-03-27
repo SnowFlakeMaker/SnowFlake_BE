@@ -1,0 +1,34 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### 정상 엔딩
+GET http://localhost:8080/ending/final
+Content-Type: application/json
+Cookie:
+
+### Stress 100_계획 실행 중: DB에서 스탯 99로 설정하고 실행
+POST http://localhost:8080/plan/execute
+Content-Type: application/json
+
+[
+  { "taskName": "수업" },
+  { "taskName": "자소서 작성" },
+  { "taskName": "공부" },
+  { "taskName": "외국어" },
+  { "taskName": "알바" },
+  { "taskName": "동아리" },
+  { "taskName": "휴식" },
+  { "taskName": "취미" },
+  { "taskName": "운동" },
+  { "taskName": "약속" },
+  { "taskName": "봉사" },
+  { "taskName": "여행" },
+  { "taskName": "전공학회" },
+  { "taskName": "학생회" }
+]
+
+### Stress 100_이벤트 실행 중
+POST http://localhost:8080/event/orientation
+Content-Type: application/json
+Cookie:

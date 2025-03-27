@@ -1,12 +1,15 @@
 HELP.md
 .gradle
 build/
+!gradle/
+!gradle/wrapper/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 .properties
 .idea/
 .DS_Store
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated

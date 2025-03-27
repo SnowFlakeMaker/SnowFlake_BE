@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이메일 인증</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            border-top: 4px solid #e9f5ff;
+            padding: 10px 0;
+            text-align: left;
+            color: #e9f5ff;
+            font-size: 14px;
+        }
+        .title {
+            font-size: 24px;
+            color: #8ab3dd;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .content {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #8ab3dd;
+        }
+        .code {
+            font-size: 20px;
+            font-weight: bold;
+            color: #8ab3dd;
+            background-color: #f3f3f3;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 20px 0;
+        }
+        .footer {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">Snowflake Maker</div>
+    <div class="title">이메일 인증 안내입니다.</div>
+    <div class="content">
+        안녕하세요.<br>
+        눈송이메이커에 오신 것을 환영합니다 ❄️<br>
+        회원가입 페이지로 돌아가 아래 <span class="highlight">이메일 인증 코드</span>를 입력하여 회원가입을 완료해 주세요.<br>
+    </div>
+    <div class="code" th:text="${verificationCode}"></div>
+    <br>
+    <div class="footer">
+        이 메일은 발신 전용입니다. 궁금한 사항이 있으시면 고객 지원 센터를 방문해 주세요.
+    </div>
+</div>
+</body>
+</html>
