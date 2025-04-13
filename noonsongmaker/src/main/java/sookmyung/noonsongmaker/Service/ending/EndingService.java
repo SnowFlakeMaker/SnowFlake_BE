@@ -69,7 +69,6 @@ public class EndingService {
                statusInfo.getGrit() == GOOD &&
                statusInfo.getStrength() == GOOD &&
                statusInfo.getSocial() == GOOD &&
-               statusInfo.getStress() == GOOD &&
                statusInfo.getLeadership() == GOOD &&
                statusInfo.getGeneralAssess() == GOOD;
     }
